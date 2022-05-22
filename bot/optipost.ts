@@ -51,7 +51,12 @@ export class OptipostRequest {
 export class OptipostSession {
     readonly id:string
     Dead:boolean=false
+    Requests:OptipostRequest[]=[]
     constructor() {
+        this.id = crypto
+            .randomBytes(10)
+            .toString('hex')
+
         
     }
 }
@@ -60,15 +65,21 @@ export class Optipost {
     readonly app:express.Application
     readonly port:number
     readonly url:string
+    private readonly _connection:BaseEvent=new BaseEvent()
+    readonly connection:EventSignal
     constructor(port:number=3000,url:string="opti") {
+        this.connection = this._connection.Event
+
         this.app = express()
         this.port = port
         this.url = url
         this.app.use(bodyparser.json())
+
         this.app.post("/"+url,(res,req) => {
             
         })
-        this.app.listen(3000,() => {
+
+        this.app.listen(port,() => {
             console.log(`Optipost server now running on localhost:${port}/${url}`)
         })
     }
