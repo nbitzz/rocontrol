@@ -1,6 +1,7 @@
 import express from "express"
 import bodyparser from "body-parser"
 import { BaseEvent,EventSignal } from "./events"
+import crypto from "crypto"
 
 interface JSONCompliantArray {
     [key:number]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null
@@ -20,24 +21,38 @@ export class OptipostRequest {
     readonly response:express.Response
     private readonly Autostop:NodeJS.Timeout
     readonly KillTimestamp:number
-    readonly Dead:boolean=false
+    private _Dead:boolean=false
+    get Dead():boolean {return this._Dead}
 
     constructor(req:express.Request,res:express.Response) {
         this.request = req
         this.response = res
         this.KillTimestamp = Date.now()+15000
         this.Autostop = setTimeout(() => {
-            
+            this.Kill()
         },15000)
     }
+    
     Kill() {
         this.Reply({
             type:"Kill",
             data:{}
         })
     }
+
     Reply(data:BasicReply) {
+        if (this._Dead) {throw new Error("Request already dead");}
         this.response.send(JSON.stringify(data))
+        clearTimeout(this.Autostop)
+        this._Dead = true        
+    }
+}
+
+export class OptipostSession {
+    readonly id:string
+    Dead:boolean=false
+    constructor() {
+        
     }
 }
 
