@@ -2,6 +2,7 @@ import express from "express"
 import bodyparser from "body-parser"
 import { BaseEvent,EventSignal } from "./events"
 import crypto from "crypto"
+import e from "express"
 
 interface JSONCompliantArray {
     [key:number]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null
@@ -122,6 +123,15 @@ export class OptipostSession {
         let newRequest = new OptipostRequest(req,res)
 
         this.Requests.push(newRequest)
+
+        // Basic but should work
+
+        if (newRequest.dataType == "Close") {
+            this.Close()   
+        } else {
+            this._message.Fire(newRequest.data)
+        }
+
         // On death, find index and splice
         newRequest.death.then(() => {
             if (this.Requests.findIndex(e => e == newRequest) != -1) {
