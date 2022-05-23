@@ -95,7 +95,7 @@ export class OptipostSession {
      * @returns {boolean} True if data sent, false if there were no open requests to send it to
      * 
      */
-    Send(reply:BasicReply):boolean {
+    _Send(reply:BasicReply):boolean {
         if (this.Requests[0]) {
             this.Requests[0].Reply(reply)
             return true
@@ -103,6 +103,10 @@ export class OptipostSession {
             console.warn(`WARN! DATA DROPPED AT ${Date.now()}`)
             return false
         }
+    }
+
+    Send(reply:JSONCompliantObject) {
+        this._Send({type:"Data",data:reply})
     }
 
     private SetupAutoDisconnect() {
@@ -127,7 +131,7 @@ export class OptipostSession {
 
         if (newRequest.dataType == "Close") {
             this.Close()   
-        } else {
+        } else if (newRequest.dataType == "Data") {
             this._message.Fire(newRequest.data)
         }
 
