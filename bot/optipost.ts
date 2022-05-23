@@ -2,7 +2,6 @@ import express from "express"
 import bodyparser from "body-parser"
 import { BaseEvent,EventSignal } from "./events"
 import crypto from "crypto"
-import e from "express"
 
 interface JSONCompliantArray {
     [key:number]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null
