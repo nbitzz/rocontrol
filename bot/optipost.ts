@@ -151,6 +151,10 @@ export class Optipost {
         this.url = url
         this.app.use(bodyparser.json())
 
+        this.app.get("/"+url,(req,res) => {
+            res.send(`Optipost online`)
+        })
+
         this.app.post("/"+url,(req,res) => {
             let body = req.body
             

@@ -118,6 +118,9 @@ class Optipost {
         this.port = port;
         this.url = url;
         this.app.use(body_parser_1.default.json());
+        this.app.get("/" + url, (req, res) => {
+            res.send(`Optipost online`);
+        });
         this.app.post("/" + url, (req, res) => {
             let body = req.body;
             // TODO: make this code not suck
