@@ -84,6 +84,7 @@ export class OptipostSession {
      */
 
     Close() {
+        console.log(`Connection ${this.id} closed`)
         if (!this.Dead) {
             this._Dead = true
             this._death.Fire()
