@@ -100,11 +100,18 @@ export class Optipost {
 
         this.app.post("/"+url,(req,res) => {
             let body = req.body
-
+            
             if (body.type && typeof body.data == typeof {}) {
                 
             } else {
-                
+                res.send(
+                    JSON.stringify(
+                        {
+                            type:"InvalidObject",
+                            data:{}
+                        }
+                    )
+                )    
             }
         })
 
