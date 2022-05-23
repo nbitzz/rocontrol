@@ -1,5 +1,6 @@
 import Discord, { Intents } from "discord.js"
 import { Optipost, OptipostSession } from "./optipost"
+require("dotenv").config()
 
 let client = new Discord.Client({ intents: [
     Intents.FLAGS.GUILD_MESSAGES,
