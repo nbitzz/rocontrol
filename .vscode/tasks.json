@@ -9,6 +9,15 @@
 				"isDefault": true
 			},
 			"label": "Build (Bot Server)"
+		},
+		{
+			"type": "shell",
+			"command":"npx tsc && node ./server_out/index.js && del ./server_out/*",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "Build & Test"
 		}
 	]
 }
