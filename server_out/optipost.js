@@ -40,6 +40,7 @@ class OptipostRequest {
         this.response.send(JSON.stringify(data));
         clearTimeout(this.Autostop);
         this._Dead = true;
+        this._death.Fire();
     }
 }
 exports.OptipostRequest = OptipostRequest;
@@ -96,6 +97,7 @@ class OptipostSession {
         // Clear autoDisconnect timeout
         if (this.autoDisconnect) {
             clearTimeout(this.autoDisconnect);
+            this.autoDisconnect = undefined;
         }
         let newRequest = new OptipostRequest(req, res);
         this.Requests.push(newRequest);
@@ -138,8 +140,16 @@ class Optipost {
                 if (body.id) {
                     let Connection = this.connections.find(e => e.id == body.id);
                     // If connection is not dead
-                    if (!(Connection === null || Connection === void 0 ? void 0 : Connection.Dead)) {
-                        Connection === null || Connection === void 0 ? void 0 : Connection.InterpretNewRequest(req, res);
+                    if (Connection) {
+                        if (!Connection.Dead) {
+                            Connection.InterpretNewRequest(req, res);
+                        }
+                        else {
+                            res.send(JSON.stringify({
+                                type: "InvalidSessionId",
+                                data: {}
+                            }));
+                        }
                     }
                     else {
                         res.send(JSON.stringify({
@@ -151,6 +161,8 @@ class Optipost {
                 else if (body.type == "EstablishConnection") {
                     let session = new OptipostSession();
                     this._connection.Fire(session);
+                    console.log(`Connection established ${session.id}`);
+                    this.connections.push(session);
                     res.send(JSON.stringify({
                         type: "ConnectionEstablished",
                         data: { id: session.id }

@@ -18,8 +18,8 @@ function module.new(url:string)
     clone._onclose = Instance.new("BindableEvent")
 
     clone.onopen = clone._onopen.Event
-    clone.onmessage = clone._onopen.Event
-    clone.onclose = clone._onopen.Event
+    clone.onmessage = clone._onmessage.Event
+    clone.onclose = clone._onclose.Event
 
     clone.OpenPosts = 0
 
@@ -27,17 +27,15 @@ function module.new(url:string)
 
     clone.url = url
 
-    clone:Open()
-
     return clone
 end
 
 function module:Open()
-    if ({pcall(function() g(self.url) end)})[1] then
-        self.id = p(self.url,JSON.stringify({type="EstablishConnection",data={}}))
+    if pcall(function() g(self.url) end) then
+        self.id = JSON.parse(p(self.url,JSON.stringify({type="EstablishConnection",data={}}))).data.id
         self._onopen:Fire()
         self.open = true
-        self:Send({},true)
+        self:Send({x="x"},true)
     end
 end
 
@@ -45,11 +43,11 @@ function module:Send(data,fakePost)
     if (self.open) then
         coroutine.resume(coroutine.create(function()
             self.OpenPosts += 1
-            local x = p(self.url,JSON.stringify({type=({[true]="Ping",[false]="Data"})[fakePost],data=data,id=self.id}))
+            local x = p(self.url,JSON.stringify({type=({[true]="Ping",[false]="Data"})[not not fakePost],data=data,id=self.id}))
             local data = JSON.parse(x)
             self.OpenPosts -= 1
             if (self.OpenPosts == 0) then
-                self:Send({},true)
+                self:Send({x="x"},true)
             end
             if (data.type == "Data") then
                 self._onmessage:Fire(data.data)
