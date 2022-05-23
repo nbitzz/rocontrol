@@ -69,14 +69,13 @@ export class OptipostSession {
 
     private readonly _message:BaseEvent=new BaseEvent()
     private readonly _death:BaseEvent=new BaseEvent()
-    private readonly _request_made:BaseEvent=new BaseEvent()
     readonly message:EventSignal=this._message.Event
     readonly death:EventSignal=this._death.Event
-    readonly requestMade:EventSignal=this._request_made.Event
     constructor() {
         this.id = crypto
             .randomBytes(10)
             .toString('hex')
+        this.SetupAutoDisconnect()
     }
 
     /**
@@ -143,6 +142,7 @@ export class Optipost {
     readonly url:string
     private readonly _connection:BaseEvent=new BaseEvent()
     readonly connection:EventSignal
+    private connections:OptipostSession[]=[]
     constructor(port:number=3000,url:string="opti") {
         this.connection = this._connection.Event
 
@@ -154,21 +154,41 @@ export class Optipost {
         this.app.post("/"+url,(req,res) => {
             let body = req.body
             
+            // TODO: make this code not suck
+
             if (body.type && typeof body.data == typeof {}) {
                 if (body.id) {
+                    let Connection = this.connections.find(e => e.id == body.id)
+                    // If connection is not dead
+                    if (!(Connection?.Dead)) {
+                        Connection?.InterpretNewRequest(req,res)
+                    } else {
+                        res.send(JSON.stringify(
+                            {
+                                type:"InvalidSessionId",
+                                data:{}
+                            }
+                        ))
+                    }
+                } else if (body.type == "EstablishConnection") {
+                    let session = new OptipostSession()
                     
-                } else {
+                    this._connection.Fire(session)
 
+                    res.send(JSON.stringify(
+                        {
+                            type:"ConnectionEstablished",
+                            data:{id:session.id}
+                        }
+                    ))
                 }
             } else {
-                res.send(
-                    JSON.stringify(
-                        {
-                            type:"InvalidObject",
-                            data:{}
-                        }
-                    )
-                )    
+                res.send(JSON.stringify(
+                    {
+                        type:"InvalidObject",
+                        data:{}
+                    }
+                ))    
             }
         })
 
