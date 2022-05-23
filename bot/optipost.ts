@@ -75,6 +75,13 @@ export class OptipostSession {
             .randomBytes(10)
             .toString('hex')
     }
+
+    ForceKill() {
+        if (!this.Dead) {
+            this._Dead = true
+            this._death.Fire()
+        }
+    }
 }
 
 export class Optipost {
