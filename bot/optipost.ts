@@ -39,15 +39,15 @@ export class OptipostRequest {
     constructor(req:express.Request,res:express.Response) {
         this.request = req
         this.response = res
-        this.KillTimestamp = Date.now()+15000
+        this.KillTimestamp = Date.now()+30000
         this.Autostop = setTimeout(() => {
             this.Kill()
-        },15000)
+        },30000)
     }
     
     Kill() {
         this.Reply({
-            type:"Kill",
+            type:"RequestKilled",
             data:{}
         })
     }
@@ -65,22 +65,75 @@ export class OptipostSession {
     private _Dead:boolean=false
     get Dead() {return this._Dead}
     Requests:OptipostRequest[]=[]
+    private autoDisconnect?:NodeJS.Timeout
 
     private readonly _message:BaseEvent=new BaseEvent()
     private readonly _death:BaseEvent=new BaseEvent()
+    private readonly _request_made:BaseEvent=new BaseEvent()
     readonly message:EventSignal=this._message.Event
     readonly death:EventSignal=this._death.Event
+    readonly requestMade:EventSignal=this._request_made.Event
     constructor() {
         this.id = crypto
             .randomBytes(10)
             .toString('hex')
     }
 
-    ForceKill() {
+    /**
+     * @description Closes the connection
+     */
+
+    Close() {
         if (!this.Dead) {
             this._Dead = true
             this._death.Fire()
         }
+    }
+
+    /**
+     * 
+     * @description Sends a message to the connected client.
+     * @returns {boolean} True if data sent, false if there were no open requests to send it to
+     * 
+     */
+    Send(reply:BasicReply):boolean {
+        if (this.Requests[0]) {
+            this.Requests[0].Reply(reply)
+            return true
+        } else {
+            console.warn(`WARN! DATA DROPPED AT ${Date.now()}`)
+            return false
+        }
+    }
+
+    private SetupAutoDisconnect() {
+        if (!this.autoDisconnect) {
+            this.autoDisconnect = setTimeout(() => {
+                this.Close()
+            },15000)
+        }
+    }
+
+    InterpretNewRequest(req:express.Request,res:express.Response) {
+        // Clear autoDisconnect timeout
+        if (this.autoDisconnect) {
+            clearTimeout(this.autoDisconnect)
+        }
+        
+        let newRequest = new OptipostRequest(req,res)
+
+        this.Requests.push(newRequest)
+        // On death, find index and splice
+        newRequest.death.then(() => {
+            if (this.Requests.findIndex(e => e == newRequest) != -1) {
+                this.Requests.splice(this.Requests.findIndex(e => e == newRequest),1)
+            }
+
+            // Setup auto disconnect if requests is 0
+            if (this.Requests.length == 0) {
+                this.SetupAutoDisconnect()
+            }
+        })
     }
 }
 
@@ -102,7 +155,11 @@ export class Optipost {
             let body = req.body
             
             if (body.type && typeof body.data == typeof {}) {
-                
+                if (body.id) {
+                    
+                } else {
+
+                }
             } else {
                 res.send(
                     JSON.stringify(
