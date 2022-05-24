@@ -16,7 +16,7 @@ local Actions = {
         session:Send({
             type = "GetGameInfo",
             data = game.JobId,
-            gameid = game.PlaceId
+            gameid = tostring(game.PlaceId)
         })
     end
 }
