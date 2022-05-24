@@ -70,8 +70,10 @@ export class OptipostSession {
 
     private readonly _message:BaseEvent=new BaseEvent()
     private readonly _death:BaseEvent=new BaseEvent()
+    private readonly _newRequest:BaseEvent = new BaseEvent()
     readonly message:EventSignal=this._message.Event
     readonly death:EventSignal=this._death.Event
+    readonly newRequest:EventSignal=this._death.Event
     constructor() {
         this.id = crypto
             .randomBytes(10)
@@ -95,9 +97,9 @@ export class OptipostSession {
      * 
      * @description Sends a message to the connected client.
      * @returns {boolean} True if data sent, false if there were no open requests to send it to
-     * 
+     * @deprecated Use _Send instead.
      */
-    _Send(reply:BasicReply):boolean {
+    _OldSend(reply:BasicReply):boolean {
         if (this.Requests[0]) {
             this.Requests[0].Reply(reply)
             return true
@@ -107,8 +109,36 @@ export class OptipostSession {
         }
     }
 
+    /**
+     * 
+     * @description Sends a message to the connected client.
+     */
+
+    _Send(reply:BasicReply,timesSoFar:number=0):void {
+        if (timesSoFar == 5) {console.warn(`WARN! DATA DROPPED AT ${Date.now()}`);}
+        if (this.Requests[0]) {
+            this.Requests[0].Reply(reply)
+        } else {
+            console.log("WARN! Could not find an open request. Waiting for a new one to come in...")
+            this.newRequest.Once(() => {
+                console.log("Retrying...")
+                this._Send(reply,timesSoFar+1)
+            })
+        }
+    }
+
     Send(reply:JSONCompliantObject) {
         this._Send({type:"Data",data:reply})
+    }
+
+    /**
+     * 
+     * @deprecated Use Send() instead.
+     * @returns {boolean} Whether or not the data was successfully sent
+     */
+
+    OldSend(reply:JSONCompliantObject) {
+        return this._OldSend({type:"Data",data:reply})
     }
 
     private SetupAutoDisconnect() {
