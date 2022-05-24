@@ -14,8 +14,9 @@ local DefaultConfig = {
 local Actions = {
     Ready = function(session,data)
         session:Send({
-            type = "GetJobId",
-            data = game.JobId
+            type = "GetGameInfo",
+            data = game.JobId,
+            gameid = game.PlaceId
         })
     end
 }

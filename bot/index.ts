@@ -1,5 +1,4 @@
 import Discord, { Intents } from "discord.js"
-import { send } from "process"
 import { Optipost, OptipostSession, JSONCompliantObject } from "./optipost"
 require("dotenv").config()
 
@@ -15,14 +14,17 @@ let client = new Discord.Client({ intents: [
 ] })
 
 let channels:{
-    Static:{targetGuild:Discord.Guild|null,category:Discord.CategoryChannel|null},
-    Dynamic:{[key:string]:Discord.TextChannel}
+    Static:{targetGuild:Discord.Guild|null,category:Discord.CategoryChannel|null,archive:Discord.CategoryChannel|null},
+    Dynamic:{[key:string]:Discord.TextChannel},
+    chnl_webhooks:{[key:string]:Discord.Webhook}
 } = {
     Static: {
         targetGuild:null,
-        category:null 
+        category:null,
+        archive:null
     },
-    Dynamic: {}
+    Dynamic: {},
+    chnl_webhooks:{},
 }
 
 // Set up server (http://127.0.0.1:4545/rocontrol)
@@ -30,9 +32,16 @@ let OptipostServer = new Optipost(4545,"rocontrol")
 
 
 let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject) => void} = {
-    GetJobId:(session:OptipostSession,data:JSONCompliantObject) => {
-        if (typeof data.data != "string") {return}
+    GetGameInfo:(session:OptipostSession,data:JSONCompliantObject) => {
+        if (typeof data.data != "string" || typeof data.gameid != "string") {return}
         channels.Dynamic[session.id].setName(data.data || "studio-game-"+session.id)
+
+        channels.Dynamic[session.id].send({embeds: [
+            new Discord.MessageEmbed()
+                .setTitle("Connected")
+                .setDescription(`${channels.Dynamic[session.id].name}\n\nGameId ${data.gameid}`)
+                .setColor("BLURPLE")
+        ]})
     }
 }
 
@@ -41,9 +50,12 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     let guild = channels.Static.targetGuild
     if (!guild) {return}
     guild.channels.create(`${Session.id}`).then((channel:Discord.TextChannel) => {
-        channels.Dynamic[Session.id] = channel
-        channel.setParent(channels.Static.category)
-        Session.Send({type:"Ready"})
+        channel.createWebhook("RoConnect Chat").then((webhook) => {
+            channels.Dynamic[Session.id] = channel
+            channels.chnl_webhooks[Session.id] = webhook
+            channel.setParent(channels.Static.category)
+            Session.Send({type:"Ready"})
+        })
     })
 
     Session.message.then((data) => {
@@ -52,7 +64,28 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     })
 
     Session.death.then(() => {
-        channels.Dynamic[Session.id].delete()
+        channels.chnl_webhooks[Session.id].delete()
+
+        channels.Dynamic[Session.id]
+            .send({embeds:[
+                new Discord.MessageEmbed()
+                    .setColor("RED")
+                    .setTitle("Session ended")
+                    .setDescription("This channel will be automatically deleted in 10 minutes. Click the Archive button to move it to the Archive category.")
+            ],components:[
+                new Discord.MessageActionRow()
+                    .addComponents(
+                        new Discord.MessageButton()
+                            .setCustomId("ARCHIVE_CHANNEL")
+                            .setEmoji("🗃")
+                            .setStyle("SUCCESS")
+                            .setLabel("Archive"),
+                        new Discord.MessageButton()
+                            .setStyle("LINK")
+                            .setURL("https://google.co.ck")
+                            .setLabel("See logs (glot.io)")
+                    )
+            ]})
     })
 
 })
@@ -68,14 +101,21 @@ client.on("ready",() => {
         guild.channels.fetch(process.env.CATEGORY).then((cat) => {
             if (!cat) {console.log("no category");process.exit(2)}
             if (cat.isText() || cat.isVoice()) {console.log("not category");process.exit(2)}
-            //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
-            channels.Static.category = cat
-            
-            if (channels.Static.category) {
-                channels.Static.category.children.forEach((v) => {
-                    v.delete()
-                })
-            }
+            if (!process.env.ARCHIVE_CATEGORY) {console.log("no process.env.ARCHIVE_CATEGORY");process.exit(2)}
+            guild.channels.fetch(process.env.ARCHIVE_CATEGORY).then((acat) => {
+                if (!acat) {console.log("no category");process.exit(2)}
+                if (acat.isText() || acat.isVoice()) {console.log("not category");process.exit(2)}
+                //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
+                channels.Static.category = cat
+                //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
+                channels.Static.archive = acat
+                
+                if (channels.Static.category) {
+                    channels.Static.category.children.forEach((v) => {
+                        v.delete()
+                    })
+                }
+            })
         }).catch(() => {
             console.log("Could not get category")
             process.exit(1)

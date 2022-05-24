@@ -10,12 +10,14 @@ RoControl is licensed under the GNU GPL v2 license. [View it here.](https://gith
 ## Setup
 
 Press CTRL + SHIFT + B in Visual Studio Code (or run `npx tsc`), then create a .env file, and set the TOKEN variable to your bot's token. Run the `./server_out/index.js` script using Node.js.
-Also, in .env, make sure to include the target guild's ID and the category you want to display the active servers. **WARNING: The bot will automatically clear this category of all of its channels on startup. Please create a new category for RoConnect.**
+Also, in .env, make sure to include the target guild's ID, the category you want to display the active servers, an archive category, and the bot prefix. **WARNING: The bot will automatically clear this category of all of its channels on startup. Please create a new category for RoConnect.**
 Your .env file should look like this:
 ```
 TOKEN=DEMO.TOKEN
 TARGET_GUILD=957424000265506846
 CATEGORY=978438656664678410
+ARCHIVE_CATEGORY=978517203018219561
+RC_PFX=>
 ```
 
 ### Hosting on Glitch
