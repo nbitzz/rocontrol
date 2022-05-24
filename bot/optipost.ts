@@ -162,6 +162,7 @@ export class OptipostSession {
 
         // Basic but should work
 
+        this._newRequest.Fire()
         if (newRequest.dataType == "Close") {
             this.Close()   
         } else if (newRequest.dataType == "Data") {
