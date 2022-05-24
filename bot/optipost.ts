@@ -39,10 +39,10 @@ export class OptipostRequest {
     constructor(req:express.Request,res:express.Response) {
         this.request = req
         this.response = res
-        this.KillTimestamp = Date.now()+30000
+        this.KillTimestamp = Date.now()+500
         this.Autostop = setTimeout(() => {
             this.Kill()
-        },30000)
+        },500)
     }
     
     Kill() {
@@ -227,7 +227,9 @@ export class Optipost {
                     // If connection is not dead
                     if (Connection) {
                         if (!Connection.Dead) {
+                            console.log("INR")
                             Connection.InterpretNewRequest(req,res)
+                            console.log("rINR")
                         } else {
                             res.send(JSON.stringify(
                                 {

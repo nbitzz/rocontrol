@@ -66,7 +66,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         // Roblox deleted the old image endpoint so i have to do this stupidness
 
         if (!channels.imgcache[data.userid.toString()]) {
-            axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${data.userid}`).then((dt) => {
+            axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${data.userid}&size=48x48&format=Png&isCircular=false`).then((dt) => {
                 if (!data.userid) {return}
                 channels.imgcache[data.userid.toString()] = dt.data.data[0].imageUrl 
                 showMessage()
