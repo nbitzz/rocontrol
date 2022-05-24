@@ -13,11 +13,35 @@ let client = new Discord.Client({ intents: [
     Intents.FLAGS.GUILD_MESSAGE_TYPING
 ] })
 
+let channels:{
+    Static:{targetGuild:Discord.Guild|null,category:Discord.CategoryChannel|null},
+    Dynamic:{[key:string]:Discord.TextChannel}
+} = {
+    Static: {
+        targetGuild:null,
+        category:null 
+    },
+    Dynamic: {}
+}
+
 // Set up server (http://127.0.0.1:4545/rocontrol)
 let OptipostServer = new Optipost(4545,"rocontrol")
 
 client.on("ready",() => {
     console.log(`RoConnect is online.`)
+    if (!process.env.TARGET_GUILD) {process.exit(2)}
+    client.guilds.fetch(process.env.TARGET_GUILD.toString()).then((guild) => {
+        channels.Static.targetGuild = guild
+        if (!process.env.CATEGORY) {process.exit(2)}
+        guild.channels.fetch(process.env.CATEGORY).then((cat) => {
+            if (typeof cat != typeof Discord.CategoryChannel) {process.exit(2)}
+            //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
+            channels.Static.category = cat
+        })
+    }).catch(() => {
+        console.error("Could not get target guild")
+        process.exit(1)
+    })
 })
 
 client.login(process.env.TOKEN)
