@@ -49,19 +49,25 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 
 })
 
+// TODO: make this code not suck (or at least clean it up)
+
 client.on("ready",() => {
     console.log(`RoConnect is online.`)
-    if (!process.env.TARGET_GUILD) {process.exit(2)}
+    if (!process.env.TARGET_GUILD) {console.log("no process.env.TARGET_GUILD");process.exit(2)}
     client.guilds.fetch(process.env.TARGET_GUILD.toString()).then((guild) => {
         channels.Static.targetGuild = guild
-        if (!process.env.CATEGORY) {process.exit(2)}
+        if (!process.env.CATEGORY) {console.log("no process.env.CATEGORY");process.exit(2)}
         guild.channels.fetch(process.env.CATEGORY).then((cat) => {
-            if (typeof cat != typeof Discord.CategoryChannel) {process.exit(2)}
+            if (!cat) {console.log("no category");process.exit(2)}
+            if (cat.isText() || cat.isVoice()) {console.log("not category");process.exit(2)}
             //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
             channels.Static.category = cat
+        }).catch(() => {
+            console.log("Could not get category")
+            process.exit(1)
         })
     }).catch(() => {
-        console.error("Could not get target guild")
+        console.log("Could not get target guild")
         process.exit(1)
     })
 })

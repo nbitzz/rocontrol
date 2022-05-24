@@ -1,5 +1,6 @@
 export class EventConnection {
     private _disconnected:boolean = false // Internal
+    readonly Once:boolean = false
     readonly Signal:EventSignal
     readonly Callback:(...a:any[]) => void
     get Disconnected():boolean {
@@ -9,9 +10,10 @@ export class EventConnection {
         this._disconnected = true
         this.Signal._GC()
     }
-    constructor(signal:EventSignal,callback:(...a:any[]) => void) {
+    constructor(signal:EventSignal,callback:(...a:any[]) => void,once:boolean=false) {
         this.Signal = signal
         this.Callback = callback
+        this.Once = false
     }
 }
 
@@ -22,6 +24,11 @@ export class EventSignal {
     }
     Connect(callback:(...a:any[]) => void):EventConnection {
         let ev = new EventConnection(this,callback)
+        this._connections.push(ev)
+        return ev
+    }
+    Once(callback:(...a:any[]) => void):EventConnection {
+        let ev = new EventConnection(this,callback,true)
         this._connections.push(ev)
         return ev
     }
@@ -36,6 +43,7 @@ export class EventSignal {
     // Connect aliases
     then = this.Connect // promise-like
     connect = this.Connect // lowercase
+    once = this.Once // Once port
 
     constructor() {
         return this
@@ -50,6 +58,9 @@ export class BaseEvent {
     Fire(...a:any[]):void {
         this.Event.Connections.filter(e => e.Disconnected == false).forEach((v,x) => {
             v.Callback(...Array.from(arguments))
+            if (v.Once) {
+                v.Disconnect()
+            }
         })
     }
 }
