@@ -1,4 +1,5 @@
 import Discord, { Intents } from "discord.js"
+import { send } from "process"
 import { Optipost, OptipostSession } from "./optipost"
 require("dotenv").config()
 
@@ -34,10 +35,15 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     if (!guild) {return}
     guild.channels.create(`${Session.id}`).then((channel:Discord.TextChannel) => {
         channels.Dynamic[Session.id] = channel
+        Session.Send({type:"Ready"})
     })
 
     Session.message.then((data) => {
         
+    })
+
+    Session.death.then(() => {
+        channels.Dynamic[Session.id].delete()
     })
 
 })
