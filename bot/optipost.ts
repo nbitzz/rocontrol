@@ -73,7 +73,7 @@ export class OptipostSession {
     private readonly _newRequest:BaseEvent = new BaseEvent()
     readonly message:EventSignal=this._message.Event
     readonly death:EventSignal=this._death.Event
-    readonly newRequest:EventSignal=this._death.Event
+    readonly newRequest:EventSignal=this._newRequest.Event
     constructor() {
         this.id = crypto
             .randomBytes(10)
@@ -120,10 +120,20 @@ export class OptipostSession {
             this.Requests[0].Reply(reply)
         } else {
             console.log("WARN! Could not find an open request. Waiting for a new one to come in...")
-            this.newRequest.Once(() => {
+            let a:NodeJS.Timeout|null = null
+            let x = this.newRequest.Once(() => {
                 console.log("Retrying...")
+                if (a) {
+                    clearTimeout(a)
+                }
                 this._Send(reply,timesSoFar+1)
             })
+
+            a = setTimeout(() => {
+                x.Disconnect()
+                console.warn("WARN! Timeout")
+            },10000)
+            
         }
     }
 
@@ -163,6 +173,7 @@ export class OptipostSession {
         // Basic but should work
 
         this._newRequest.Fire()
+        console.log(`new request ${newRequest.dataType}`)
         if (newRequest.dataType == "Close") {
             this.Close()   
         } else if (newRequest.dataType == "Data") {

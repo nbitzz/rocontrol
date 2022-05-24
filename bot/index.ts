@@ -32,7 +32,7 @@ let OptipostServer = new Optipost(4545,"rocontrol")
 let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject) => void} = {
     GetJobId:(session:OptipostSession,data:JSONCompliantObject) => {
         if (typeof data.data != "string") {return}
-        channels.Dynamic[session.id].setName(data.data)
+        channels.Dynamic[session.id].setName(data.data || "studio-game-"+session.id)
     }
 }
 
@@ -70,6 +70,12 @@ client.on("ready",() => {
             if (cat.isText() || cat.isVoice()) {console.log("not category");process.exit(2)}
             //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
             channels.Static.category = cat
+            
+            if (channels.Static.category) {
+                channels.Static.category.children.forEach((v) => {
+                    v.delete()
+                })
+            }
         }).catch(() => {
             console.log("Could not get category")
             process.exit(1)

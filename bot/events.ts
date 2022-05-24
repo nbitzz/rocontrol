@@ -13,7 +13,7 @@ export class EventConnection {
     constructor(signal:EventSignal,callback:(...a:any[]) => void,once:boolean=false) {
         this.Signal = signal
         this.Callback = callback
-        this.Once = false
+        this.Once = once
     }
 }
 
@@ -56,12 +56,14 @@ export class BaseEvent {
         this.Event = new EventSignal()
     }
     Fire(...a:any[]):void {
+        let toDisconnect:EventConnection[] = []
         this.Event.Connections.filter(e => e.Disconnected == false).forEach((v,x) => {
             v.Callback(...Array.from(arguments))
             if (v.Once) {
-                v.Disconnect()
+                toDisconnect.push(v)
             }
         })
+        toDisconnect.forEach(v => v.Disconnect())
     }
 }
 
