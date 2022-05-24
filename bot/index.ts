@@ -35,6 +35,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     if (!guild) {return}
     guild.channels.create(`${Session.id}`).then((channel:Discord.TextChannel) => {
         channels.Dynamic[Session.id] = channel
+        channel.setParent(channels.Static.category)
         Session.Send({type:"Ready"})
     })
 
