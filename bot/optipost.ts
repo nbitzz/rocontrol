@@ -3,15 +3,15 @@ import bodyparser from "body-parser"
 import { BaseEvent,EventSignal } from "./events"
 import crypto from "crypto"
 
-interface JSONCompliantArray {
+export interface JSONCompliantArray {
     [key:number]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null
 }
 
-interface JSONCompliantObject {
+export interface JSONCompliantObject {
     [key:string]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null
 }
 
-interface BasicReply {
+export interface BasicReply {
     type:string
     data:JSONCompliantObject
 }

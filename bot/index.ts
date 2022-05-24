@@ -1,6 +1,6 @@
 import Discord, { Intents } from "discord.js"
 import { send } from "process"
-import { Optipost, OptipostSession } from "./optipost"
+import { Optipost, OptipostSession, JSONCompliantObject } from "./optipost"
 require("dotenv").config()
 
 let client = new Discord.Client({ intents: [
@@ -29,6 +29,13 @@ let channels:{
 let OptipostServer = new Optipost(4545,"rocontrol")
 
 
+let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject) => void} = {
+    GetJobId:(session:OptipostSession,data:JSONCompliantObject) => {
+        if (typeof data.data != "string") {return}
+        channels.Dynamic[session.id].setName(data.data)
+    }
+}
+
 // On connection to Optipost
 OptipostServer.connection.then((Session:OptipostSession) => {
     let guild = channels.Static.targetGuild
@@ -40,7 +47,8 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     })
 
     Session.message.then((data) => {
-        
+        if (typeof data.type != "string") {return}
+        OptipostActions[data.type](Session,data)
     })
 
     Session.death.then(() => {
