@@ -27,6 +27,21 @@ let channels:{
 // Set up server (http://127.0.0.1:4545/rocontrol)
 let OptipostServer = new Optipost(4545,"rocontrol")
 
+
+// On connection to Optipost
+OptipostServer.connection.then((Session:OptipostSession) => {
+    let guild = channels.Static.targetGuild
+    if (!guild) {return}
+    guild.channels.create(`${Session.id}`).then((channel:Discord.TextChannel) => {
+        channels.Dynamic[Session.id] = channel
+    })
+
+    Session.message.then((data) => {
+        
+    })
+
+})
+
 client.on("ready",() => {
     console.log(`RoConnect is online.`)
     if (!process.env.TARGET_GUILD) {process.exit(2)}
