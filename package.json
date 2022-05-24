@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"node ./server_out/index.js"
+    "start": "node ./server_out/index.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/nbitzz/rocontrol#readme",
   "dependencies": {
+    "axios": "^0.27.2",
     "body-parser": "^1.20.0",
     "discord.js": "^13.7.0",
     "dotenv": "^16.0.1",

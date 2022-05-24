@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 -- Modules
 
 local Optipost = require(script.Optipost)
@@ -11,12 +12,46 @@ local DefaultConfig = {
 
 -- Code
 
+local ut = {}
+
+function ut._initChat(session,player:Player)
+    local c = player.Chatted:Connect(function(msg)
+        session:Send({
+            type = "Chat",
+            data = msg,
+            userid = tostring(player.UserId),
+            username = player.Name,
+            displayname = player.DisplayName
+        })
+    end)
+    
+    session.onclose:Connect(function()
+        c:Disconnect()
+    end)
+end
+
+function ut.chat(session)
+    print("Chat logging ready.")
+
+    for x,v in pairs(game:GetService("Players"):GetPlayers()) do
+        ut._initChat(session,v)
+    end
+
+    local c = game:GetService("Players").PlayerAdded:Connect(function(p)
+        ut._initChat(session,p)
+    end)
+
+    session.onclose:Connect(function()
+        c:Disconnect()
+    end)
+end
+
 local Actions = {
     Ready = function(session,data)
         session:Send({
             type = "GetGameInfo",
             data = game.JobId,
-            gameid = tostring(game.PlaceId)
+            gameid = tonumber(game.PlaceId)
         })
     end
 }
@@ -37,6 +72,8 @@ function StartSession(config)
     end)
 
     OptipostSession:Open()
+
+    ut.chat(OptipostSession)
 
     return OptipostSession
 end

@@ -1,3 +1,4 @@
+import axios from "axios"
 import Discord, { Intents } from "discord.js"
 import { Optipost, OptipostSession, JSONCompliantObject } from "./optipost"
 require("dotenv").config()
@@ -16,7 +17,8 @@ let client = new Discord.Client({ intents: [
 let channels:{
     Static:{targetGuild:Discord.Guild|null,category:Discord.CategoryChannel|null,archive:Discord.CategoryChannel|null},
     Dynamic:{[key:string]:Discord.TextChannel},
-    chnl_webhooks:{[key:string]:Discord.Webhook}
+    chnl_webhooks:{[key:string]:Discord.Webhook},
+    imgcache:{[key:string]:string}
 } = {
     Static: {
         targetGuild:null,
@@ -25,6 +27,7 @@ let channels:{
     },
     Dynamic: {},
     chnl_webhooks:{},
+    imgcache:{}
 }
 
 // Set up server (http://127.0.0.1:4545/rocontrol)
@@ -33,15 +36,47 @@ let OptipostServer = new Optipost(4545,"rocontrol")
 
 let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject) => void} = {
     GetGameInfo:(session:OptipostSession,data:JSONCompliantObject) => {
-        if (typeof data.data != "string" || typeof data.gameid != "string") {return}
+        if (typeof data.data != "string" || typeof data.gameid != "number") {return}
         channels.Dynamic[session.id].setName(data.data || "studio-game-"+session.id)
 
         channels.Dynamic[session.id].send({embeds: [
             new Discord.MessageEmbed()
                 .setTitle("Connected")
-                .setDescription(`${channels.Dynamic[session.id].name}\n\nGameId ${data.gameid}`)
+                .setDescription(`Optipost Session ${session.id}\n\nJobId ${data.data}\nGameId ${data.gameid}`)
                 .setColor("BLURPLE")
         ]})
+    },
+    Chat:(session:OptipostSession,data:JSONCompliantObject) => {
+        if (typeof data.data != "string" || typeof data.userid != "string" || typeof data.username != "string") {return}
+
+        let webhookURL = channels.chnl_webhooks[session.id].url
+
+        let showMessage = function() {
+            if (!data.userid) {return}
+            axios.post(webhookURL,{
+                content:data.data,
+                avatar_url:channels.imgcache[data.userid.toString()],
+                username:`${data.username} (${data.userid})`,
+                allowed_mentions: {
+                    parse: []
+                }
+            })
+        }
+
+        // Roblox deleted the old image endpoint so i have to do this stupidness
+
+        if (!channels.imgcache[data.userid.toString()]) {
+            axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${data.userid}`).then((dt) => {
+                if (!data.userid) {return}
+                channels.imgcache[data.userid.toString()] = dt.data.data[0].imageUrl 
+                showMessage()
+            }).catch(() => {
+                showMessage()
+            })
+        } else {
+            showMessage()
+        }
+        
     }
 }
 

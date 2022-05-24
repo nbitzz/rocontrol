@@ -1,7 +1,7 @@
 # RoControl
 A simple Discord bot that connects to a Roblox game.
 
-Requires discord.js v13, express, dotenv, and body-parser.
+Requires discord.js v13, express, axios, dotenv, and body-parser.
 
 ## License
 
