@@ -160,6 +160,10 @@ export class OptipostSession {
     }
 
     InterpretNewRequest(req:express.Request,res:express.Response) {
+        // Cleanup
+
+        this.Requests = this.Requests.filter(e => !e.Dead)
+
         // Clear autoDisconnect timeout
         if (this.autoDisconnect) {
             clearTimeout(this.autoDisconnect)
@@ -185,7 +189,6 @@ export class OptipostSession {
             if (this.Requests.findIndex(e => e == newRequest) != -1) {
                 this.Requests.splice(this.Requests.findIndex(e => e == newRequest),1)
             }
-
             // Setup auto disconnect if requests is 0
             if (this.Requests.length == 0) {
                 this.SetupAutoDisconnect()
