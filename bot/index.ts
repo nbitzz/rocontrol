@@ -1,9 +1,28 @@
 import axios from "axios"
 import Discord, { Intents } from "discord.js"
-import { response } from "express"
-import { Session } from "inspector"
-import { Optipost, OptipostSession, JSONCompliantObject } from "./optipost"
+import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 require("dotenv").config()
+
+interface RoControlCommand {
+    args:number,
+    names:string[],
+    id:string,
+    desc:string,
+}
+
+interface GlobalCommand {
+    args:number,
+    names:string[],
+    desc:string,
+    action:(message:Discord.Message,args:string[]) => void
+}
+
+interface LocalTSCommand {
+    args:number,
+    names:string[],
+    desc:string,
+    action:(session:OptipostSession,message:Discord.Message,args:string[]) => void
+}
 
 let client = new Discord.Client({ intents: [
     Intents.FLAGS.GUILD_MESSAGES,
@@ -21,7 +40,7 @@ let prefix:string = process.env.RC_PFX
 
 let make_glot_post:(data:string) => Promise<string> = (data:string) => {
     return new Promise((resolve,reject) => {
-        axios.post("https://glot.io/api/snippets",{language:"plaintext",title:`${new Date().toUTCString()} Log Export - RoConnect`,public:true,files:[{name:"export.txt",content:data}]}).then((data) => {
+        axios.post("https://glot.io/api/snippets",{language:"plaintext",title:`${new Date().toUTCString()} Log Export - RoCtrl`,public:true,files:[{name:"export.txt",content:data}]}).then((data) => {
             resolve(`https://glot.io/snippets/${data.data.id}`)
         }).catch(() => {
             resolve("https://google.co.ck/search?q=error")
@@ -34,8 +53,10 @@ let channels:{
     Dynamic:{[key:string]:Discord.TextChannel},
     chnl_webhooks:{[key:string]:Discord.Webhook},
     imgcache:{[key:string]:string},
-    cmdl:{[key:string]:string[]},
+    cmdl:{[key:string]:RoControlCommand[]},
     logs:{[key:string]:(lg:string) => void},
+    global_cmds:GlobalCommand[],
+    local_cmds:LocalTSCommand[]
 } = {
     Static: {
         targetGuild:null,
@@ -46,7 +67,26 @@ let channels:{
     chnl_webhooks:{},
     imgcache:{},
     cmdl:{},
-    logs:{}
+    logs:{},
+    global_cmds:[
+        {
+            names:["help","h"],
+            desc:"Calls process.exit(3)",
+            action:(message,args) => {
+                process.exit(3)
+            },
+            args:0
+        },
+        {
+            names:["stop","s"],
+            desc:"Calls process.exit(3)",
+            action:(message,args) => {
+                process.exit(3)
+            },
+            args:0
+        }
+    ],
+    local_cmds:[]
 }
 
 // Set up server (http://127.0.0.1:4545/rocontrol)
@@ -92,7 +132,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             }).catch(() => {})
         }
 
-        addLog(`${data.displayname == data.username ? data.username : `${data.displayname}/${data.username}`} ${data.username} (${data.userid}): ${data.data}`)
+        addLog(`${data.displayname == data.username ? data.username : `${data.displayname}/${data.username}`} (${data.userid}): ${data.data}`)
 
         // Roblox deleted the old image endpoint so i have to do this stupidness
 
@@ -109,6 +149,20 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         }
         
         session.OldSend({type:"ok"})
+    },
+    RegisterCommand: (session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (!Array.isArray(data.names) || typeof data.id != "string" || typeof data.desc != "string" || typeof data.args_amt != "number") {return}
+
+        channels.cmdl[session.id].push(
+            {
+                names:data.names,
+                id:data.id,
+                args:data.args_amt,
+                desc:data.desc
+            }
+        )
+
+        session.OldSend({type:"ok"})
     }
 }
 
@@ -117,16 +171,17 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     let guild = channels.Static.targetGuild
 
     let logs:string[] = [
-        `RoConnect Logs`,
+        `RoControl Logs`,
         `Connection ${Session.id}`
     ]
 
     let addLog = (str:string) => logs.push(str)
     channels.logs[Session.id] = addLog
+    channels.cmdl[Session.id] = []
 
     if (!guild) {return}
     guild.channels.create(`${Session.id}`).then((channel:Discord.TextChannel) => {
-        channel.createWebhook("RoConnect Chat").then((webhook) => {
+        channel.createWebhook("RoControl Chat").then((webhook) => {
             channels.Dynamic[Session.id] = channel
             channels.chnl_webhooks[Session.id] = webhook
             channel.setParent(channels.Static.category)
@@ -170,7 +225,14 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 // TODO: make this code not suck (or at least clean it up)
 
 client.on("ready",() => {
-    console.log(`RoConnect is online.`)
+    console.log(`RoControl is online.`)
+
+    client.user?.setPresence({
+        activities:[
+            {name:`${prefix}help | RoControl`,type:"STREAMING"}
+        ],
+    })
+
     if (!process.env.TARGET_GUILD) {console.log("no process.env.TARGET_GUILD");process.exit(2)}
     client.guilds.fetch(process.env.TARGET_GUILD.toString()).then((guild) => {
         channels.Static.targetGuild = guild
@@ -205,7 +267,69 @@ client.on("ready",() => {
 
 client.on("messageCreate",(message) => {
     if (message.content.startsWith(prefix)) {
-        
+        let _args = message.content.slice(prefix.length).split(" ")
+        let cmd = _args.splice(0,1)[0].toLowerCase()
+
+        if (Object.values(channels.Dynamic).find(e => e == message.channel)) {
+            // Sure there's a better way to do this but too lazy to find it
+
+            for (let [x,v] of Object.entries(channels.Dynamic)) {
+                if (v == message.channel) {
+                    let foundSession = OptipostServer._connections.find(e => e.id == x)
+                    if (!foundSession) {return}
+                    
+                    // First, try to find a local TS command
+
+                    let ltscmd = channels.local_cmds.find(e => e.names.find(a => a == cmd))
+            
+                    if (ltscmd) {
+                        let args =_args.splice(0,ltscmd.args-1)
+                        let lastParameter = _args.join(" ")
+                        if (lastParameter) {args.push(lastParameter)}
+
+                        try {
+                            ltscmd.action(foundSession,message,args)
+                        } catch {
+                            message.reply(`An error occured while running this command. Please try again.`)
+                        }
+                    } else {
+                        // if not, try to find a lua cmd
+                        
+                        let lcmd = channels.cmdl[foundSession.id].find(e => e.names.find(a => a == cmd))
+                        if (lcmd) {
+                            let args =_args.splice(0,lcmd.args-1)
+                            let lastParameter = _args.join(" ")
+                            if (lastParameter) {args.push(lastParameter)}
+
+                            foundSession.Send({
+                                type:"ExecuteCommand",
+                                commandId:lcmd.id,
+                                args:args
+                            })
+                        }
+                    }
+
+                }
+            }
+
+        } else {
+            // Look for a global cmd
+
+            let globalCmd = channels.global_cmds.find(e => e.names.find(a => a == cmd))
+            
+            if (globalCmd) {
+                let args =_args.splice(0,globalCmd.args-1)
+                let lastParameter = _args.join(" ")
+                if (lastParameter) {args.push(lastParameter)}
+
+                try {
+                    globalCmd.action(message,args)
+                } catch {
+                    message.reply(`An error occured while running this command. Please try again.`)
+                }
+            }
+        }
+
     } else {
         // I'm sure there's a much better way to do this,
         // I'm just too lazy to find it right now
