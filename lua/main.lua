@@ -14,6 +14,15 @@ local DefaultConfig = {
 
 local ut = {}
 
+ut.ChatService = require(
+    game:GetService("ServerScriptService")
+        :WaitForChild("ChatServiceRunner")
+        :WaitForChild("ChatService")
+)
+
+ut.Speaker = ut.ChatService:AddSpeaker("RoConnect")
+ut.Speaker:JoinChannel("All")
+
 function ut._initChat(session,player:Player)
     local c = player.Chatted:Connect(function(msg)
         session:Send({
@@ -53,6 +62,14 @@ local Actions = {
             data = game.JobId,
             gameid = tonumber(game.PlaceId)
         })
+    end,
+    Chat = function(session,data)
+        ut.Speaker:SayMessage(data.data,"All",{Tags={
+            {
+                TagText = "as "..data.tag,
+                TagColor = Color3.fromHex(data.tagColor or "#FFFFFF")
+            }
+        },NameColor=Color3.new(1,0,0)})
     end
 }
 

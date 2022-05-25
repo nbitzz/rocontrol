@@ -1,5 +1,7 @@
 import axios from "axios"
 import Discord, { Intents } from "discord.js"
+import { response } from "express"
+import { Session } from "inspector"
 import { Optipost, OptipostSession, JSONCompliantObject } from "./optipost"
 require("dotenv").config()
 
@@ -14,11 +16,26 @@ let client = new Discord.Client({ intents: [
     Intents.FLAGS.GUILD_MESSAGE_TYPING
 ] })
 
+if (!process.env.RC_PFX) {process.exit()}
+let prefix:string = process.env.RC_PFX
+
+let make_glot_post:(data:string) => Promise<string> = (data:string) => {
+    return new Promise((resolve,reject) => {
+        axios.post("https://glot.io/api/snippets",{language:"plaintext",title:`${new Date().toUTCString()} Log Export - RoConnect`,public:true,files:[{name:"export.txt",content:data}]}).then((data) => {
+            resolve(`https://glot.io/snippets/${data.data.id}`)
+        }).catch(() => {
+            resolve("https://google.co.ck/search?q=error")
+        })
+    })
+}
+
 let channels:{
     Static:{targetGuild:Discord.Guild|null,category:Discord.CategoryChannel|null,archive:Discord.CategoryChannel|null},
     Dynamic:{[key:string]:Discord.TextChannel},
     chnl_webhooks:{[key:string]:Discord.Webhook},
-    imgcache:{[key:string]:string}
+    imgcache:{[key:string]:string},
+    cmdl:{[key:string]:string[]},
+    logs:{[key:string]:(lg:string) => void},
 } = {
     Static: {
         targetGuild:null,
@@ -27,17 +44,25 @@ let channels:{
     },
     Dynamic: {},
     chnl_webhooks:{},
-    imgcache:{}
+    imgcache:{},
+    cmdl:{},
+    logs:{}
 }
 
 // Set up server (http://127.0.0.1:4545/rocontrol)
 let OptipostServer = new Optipost(4545,"rocontrol")
 
 
-let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject) => void} = {
-    GetGameInfo:(session:OptipostSession,data:JSONCompliantObject) => {
+let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject,addLog:(lg:string) => void) => void} = {
+    GetGameInfo:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.data != "string" || typeof data.gameid != "number") {return}
         channels.Dynamic[session.id].setName(data.data || "studio-game-"+session.id)
+
+        if (data.data) {
+            addLog(`JobId ${data.data}`)
+        } else {
+            addLog(`Studio Game`)
+        }
 
         channels.Dynamic[session.id].send({embeds: [
             new Discord.MessageEmbed()
@@ -45,8 +70,12 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                 .setDescription(`Optipost Session ${session.id}\n\nJobId ${data.data}\nGameId ${data.gameid}`)
                 .setColor("BLURPLE")
         ]})
+
+        addLog("-".repeat(50))
+
+        session.OldSend({type:"ok"})
     },
-    Chat:(session:OptipostSession,data:JSONCompliantObject) => {
+    Chat:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.data != "string" || typeof data.userid != "string" || typeof data.username != "string") {return}
 
         let webhookURL = channels.chnl_webhooks[session.id].url
@@ -60,8 +89,10 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                 allowed_mentions: {
                     parse: []
                 }
-            })
+            }).catch(() => {})
         }
+
+        addLog(`${data.displayname == data.username ? data.username : `${data.displayname}/${data.username}`} ${data.username} (${data.userid}): ${data.data}`)
 
         // Roblox deleted the old image endpoint so i have to do this stupidness
 
@@ -77,12 +108,22 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             showMessage()
         }
         
+        session.OldSend({type:"ok"})
     }
 }
 
 // On connection to Optipost
 OptipostServer.connection.then((Session:OptipostSession) => {
     let guild = channels.Static.targetGuild
+
+    let logs:string[] = [
+        `RoConnect Logs`,
+        `Connection ${Session.id}`
+    ]
+
+    let addLog = (str:string) => logs.push(str)
+    channels.logs[Session.id] = addLog
+
     if (!guild) {return}
     guild.channels.create(`${Session.id}`).then((channel:Discord.TextChannel) => {
         channel.createWebhook("RoConnect Chat").then((webhook) => {
@@ -95,32 +136,33 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 
     Session.message.then((data) => {
         if (typeof data.type != "string") {return}
-        OptipostActions[data.type](Session,data)
+        OptipostActions[data.type](Session,data,addLog)
     })
 
     Session.death.then(() => {
         channels.chnl_webhooks[Session.id].delete()
-
-        channels.Dynamic[Session.id]
-            .send({embeds:[
-                new Discord.MessageEmbed()
-                    .setColor("RED")
-                    .setTitle("Session ended")
-                    .setDescription("This channel will be automatically deleted in 10 minutes. Click the Archive button to move it to the Archive category.")
-            ],components:[
-                new Discord.MessageActionRow()
-                    .addComponents(
-                        new Discord.MessageButton()
-                            .setCustomId("ARCHIVE_CHANNEL")
-                            .setEmoji("🗃")
-                            .setStyle("SUCCESS")
-                            .setLabel("Archive"),
-                        new Discord.MessageButton()
-                            .setStyle("LINK")
-                            .setURL("https://google.co.ck")
-                            .setLabel("See logs (glot.io)")
-                    )
-            ]})
+        make_glot_post(logs.join("\n")).then((url:string) => {
+            channels.Dynamic[Session.id]
+                .send({embeds:[
+                    new Discord.MessageEmbed()
+                        .setColor("RED")
+                        .setTitle("Session ended")
+                        .setDescription("This channel will be automatically deleted in 10 minutes. Click the Archive button to move it to the Archive category.")
+                ],components:[
+                    new Discord.MessageActionRow()
+                        .addComponents(
+                            new Discord.MessageButton()
+                                .setCustomId("ARCHIVE_CHANNEL")
+                                .setEmoji("🗃")
+                                .setStyle("SUCCESS")
+                                .setLabel("Archive"),
+                            new Discord.MessageButton()
+                                .setStyle("LINK")
+                                .setURL(url)
+                                .setLabel("See logs (glot.io)")
+                        )
+                ]})
+        })
     })
 
 })
@@ -159,6 +201,26 @@ client.on("ready",() => {
         console.log("Could not get target guild")
         process.exit(1)
     })
+})
+
+client.on("messageCreate",(message) => {
+    if (message.content.startsWith(prefix)) {
+        
+    } else {
+        // I'm sure there's a much better way to do this,
+        // I'm just too lazy to find it right now
+        
+        if (!message.author.bot) {
+            for (let [x,v] of Object.entries(channels.Dynamic)) {
+                if (v == message.channel) {
+                    let foundSession = OptipostServer._connections.find(e => e.id == x)
+                    if (!foundSession) {return}
+                    foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:message.member?.displayHexColor || null})
+                    channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)
+                }
+            }
+        }
+    }
 })
 
 client.login(process.env.TOKEN)

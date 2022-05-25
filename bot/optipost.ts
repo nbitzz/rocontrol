@@ -204,6 +204,7 @@ export class Optipost {
     private readonly _connection:BaseEvent=new BaseEvent()
     readonly connection:EventSignal
     private connections:OptipostSession[]=[]
+    get _connections():OptipostSession[] {return this.connections}
     constructor(port:number=3000,url:string="opti") {
         this.connection = this._connection.Event
 
@@ -227,9 +228,7 @@ export class Optipost {
                     // If connection is not dead
                     if (Connection) {
                         if (!Connection.Dead) {
-                            console.log("INR")
                             Connection.InterpretNewRequest(req,res)
-                            console.log("rINR")
                         } else {
                             res.send(JSON.stringify(
                                 {
