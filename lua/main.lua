@@ -82,6 +82,7 @@ function ut.util.getPlayers(str)
             table.insert(players,v)
         end
     end
+    return players
 end
 -- ut.chat
 

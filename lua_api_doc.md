@@ -65,7 +65,7 @@ Checks if a string starts with another string
 
 Search for players. Returns array.
 ```lua
-ut.commands:AddCommand("mod.kick",{"kick","k"},"Kick plr",2,function(args) 
+ut.commands:addCommand("mod.kick",{"kick","k"},"Kick plr",2,function(args) 
     local players = ut.util.getPlayers(args[1] or "")
     if (players[1]) then
         players[1]:Kick(args[2] or "No reason specified")
