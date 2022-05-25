@@ -1,5 +1,6 @@
 import axios from "axios"
 import Discord, { Intents } from "discord.js"
+import { isGeneratorObject } from "util/types"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 require("dotenv").config()
 
@@ -34,6 +35,8 @@ let client = new Discord.Client({ intents: [
     Intents.FLAGS.GUILD_WEBHOOKS,
     Intents.FLAGS.GUILD_MESSAGE_TYPING
 ] })
+
+let clamp = (min:number,max:number,target:number) => Math.min(Math.max(target,min),max)
 
 if (!process.env.RC_PFX) {process.exit()}
 let prefix:string = process.env.RC_PFX
@@ -71,9 +74,91 @@ let channels:{
     global_cmds:[
         {
             names:["help","h"],
-            desc:"Calls process.exit(3)",
+            desc:"Shows help dialogue",
             action:(message,args) => {
-                process.exit(3)
+                let targetTable = channels.global_cmds
+                let createPageEmbed = function(page:number) {
+                    let f:string[] = []
+
+                    targetTable.slice(5*page,5*(page+1)).forEach((v) => {
+                        f.push(`**${v.names[0]}** ${v.names.slice(1).join(", ")}\n${v.desc}`)
+                    })
+                    
+                    return new Discord.MessageEmbed()
+                        .setDescription(f.join("\n\n"))
+                        .setTitle("Commands")
+                        .setColor("BLURPLE")
+                }
+
+                let pageNumber = 0
+                let emb = createPageEmbed(0)
+
+                message.channel.send({
+                    embeds:[
+                        emb
+                    ],
+                    components: [
+                        new Discord.MessageActionRow()
+                            .addComponents(
+                                new Discord.MessageButton()
+                                    .setEmoji("◀")
+                                    .setStyle("PRIMARY")
+                                    .setCustomId("ignore.helpLeft")
+                                    .setDisabled(true),
+                                new Discord.MessageButton()
+                                    .setEmoji("▶")
+                                    .setStyle("PRIMARY")
+                                    .setCustomId("ignore.helpRight")
+                                    .setDisabled(channels.global_cmds.length < 6)
+                            )
+                    ]
+                }).then((msg) => {
+                    let col = msg.createMessageComponentCollector({componentType:"BUTTON",idle:30000,filter:(e) => {return e.user.id == message.author.id}})
+
+                    col.on("collect", (int) => {
+                        int.deferUpdate()
+
+                        pageNumber = clamp(0,Math.ceil(targetTable.length/5)-1,pageNumber + (int.customId == "ignore.helpRight" ? 1 : -1))
+
+                        msg.edit(
+                            {
+                                embeds:[createPageEmbed(pageNumber)],
+                                components: [
+                                new Discord.MessageActionRow()
+                                    .addComponents(
+                                        new Discord.MessageButton()
+                                            .setEmoji("◀")
+                                            .setStyle("PRIMARY")
+                                            .setCustomId("ignore.helpLeft")
+                                            .setDisabled(pageNumber == 0),
+                                        new Discord.MessageButton()
+                                            .setEmoji("▶")
+                                            .setStyle("PRIMARY")
+                                            .setCustomId("ignore.helpRight")
+                                            .setDisabled(pageNumber == Math.ceil(targetTable.length/5)-1),
+                                    )
+                            ]}
+                        )
+                    })
+
+                    col.on("end",() => {
+                        msg.edit({components: [
+                            new Discord.MessageActionRow()
+                                .addComponents(
+                                    new Discord.MessageButton()
+                                        .setEmoji("◀")
+                                        .setStyle("PRIMARY")
+                                        .setCustomId("ignore.helpLeft")
+                                        .setDisabled(true),
+                                    new Discord.MessageButton()
+                                        .setEmoji("▶")
+                                        .setStyle("PRIMARY")
+                                        .setCustomId("ignore.helpRight")
+                                        .setDisabled(true),
+                                )
+                        ]})
+                    })
+                })
             },
             args:0
         },
@@ -86,7 +171,108 @@ let channels:{
             args:0
         }
     ],
-    local_cmds:[]
+    local_cmds:[
+        {
+            names:["help","h"],
+            desc:"Shows help dialogue",
+            action:(session,message,args) => {
+                let targetTable:(LocalTSCommand|RoControlCommand)[] = []
+                targetTable.push(...channels.local_cmds)
+                targetTable.push(...channels.cmdl[session.id])
+                let createPageEmbed = function(page:number) {
+                    let f:string[] = []
+
+                    targetTable.slice(5*page,5*(page+1)).forEach((v) => {
+                        f.push(`**${v.names[0]}** ${v.names.slice(1).join(", ")}\n${v.desc}`)
+                    })
+                    
+                    return new Discord.MessageEmbed()
+                        .setDescription(f.join("\n\n"))
+                        .setTitle("Commands")
+                        .setColor("BLURPLE")
+                }
+
+                let pageNumber = 0
+                let emb = createPageEmbed(0)
+
+                message.channel.send({
+                    embeds:[
+                        emb
+                    ],
+                    components: [
+                        new Discord.MessageActionRow()
+                            .addComponents(
+                                new Discord.MessageButton()
+                                    .setEmoji("◀")
+                                    .setStyle("PRIMARY")
+                                    .setCustomId("ignore.helpLeft")
+                                    .setDisabled(true),
+                                new Discord.MessageButton()
+                                    .setEmoji("▶")
+                                    .setStyle("PRIMARY")
+                                    .setCustomId("ignore.helpRight")
+                                    .setDisabled(channels.global_cmds.length < 6)
+                            )
+                    ]
+                }).then((msg) => {
+                    let col = msg.createMessageComponentCollector({componentType:"BUTTON",idle:30000,filter:(e) => {return e.user.id == message.author.id}})
+
+                    col.on("collect", (int) => {
+                        int.deferUpdate()
+
+                        pageNumber = clamp(0,Math.ceil(targetTable.length/5)-1,pageNumber + (int.customId == "ignore.helpRight" ? 1 : -1))
+
+                        msg.edit(
+                            {
+                                embeds:[createPageEmbed(pageNumber)],
+                                components: [
+                                new Discord.MessageActionRow()
+                                    .addComponents(
+                                        new Discord.MessageButton()
+                                            .setEmoji("◀")
+                                            .setStyle("PRIMARY")
+                                            .setCustomId("ignore.helpLeft")
+                                            .setDisabled(pageNumber == 0),
+                                        new Discord.MessageButton()
+                                            .setEmoji("▶")
+                                            .setStyle("PRIMARY")
+                                            .setCustomId("ignore.helpRight")
+                                            .setDisabled(pageNumber == Math.ceil(targetTable.length/5)-1),
+                                    )
+                            ]}
+                        )
+                    })
+
+                    col.on("end",() => {
+                        msg.edit({components: [
+                            new Discord.MessageActionRow()
+                                .addComponents(
+                                    new Discord.MessageButton()
+                                        .setEmoji("◀")
+                                        .setStyle("PRIMARY")
+                                        .setCustomId("ignore.helpLeft")
+                                        .setDisabled(true),
+                                    new Discord.MessageButton()
+                                        .setEmoji("▶")
+                                        .setStyle("PRIMARY")
+                                        .setCustomId("ignore.helpRight")
+                                        .setDisabled(true),
+                                )
+                        ]})
+                    })
+                })
+            },
+            args:0
+        },
+        {
+            names:["disconnect","fd"],
+            desc:"Disconnect the game from RoConnect",
+            action:(session,message,args) => {
+                session.Close()
+            },
+            args:0
+        },
+    ]
 }
 
 // Set up server (http://127.0.0.1:4545/rocontrol)
