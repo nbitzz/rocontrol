@@ -5,8 +5,12 @@ Set of APIs used to add commands to RoControl
 ## Table of Contents
 
 [ut](#ut)
+
 [Commands](#commands)
+
 [Discord](#discord)
+
+[Util](#util)
 
 ## ut
 
@@ -14,9 +18,18 @@ Set of APIs used to add commands to RoControl
 
 Do not use (this is only used internally)
 
-### ut.chat(session)
+Sets up Roblox to Discord chat
+
+### ut._initChat(session)
 
 Do not use (this is only used internally)
+
+Used by ut.chat (listener)
+
+### ut.init(session)
+Do not use (this is only used internally)
+
+Creates a new ut api for the session
 
 ## Commands
 
@@ -40,4 +53,25 @@ end)
 Sends a message in the connected Discord channel
 ```lua
 ut.discord:Say("Hello world!")
+```
+
+## Util
+
+### ut.util.startsWith(target,str)
+
+Checks if a string starts with another string
+
+### ut.util.getPlayers(search:string)
+
+Search for players. Returns array.
+```lua
+ut.commands:AddCommand("mod.kick",{"kick","k"},"Kick plr",2,function(args) 
+    local players = ut.util.getPlayers(args[1] or "")
+    if (players[1]) then
+        players[1]:Kick(args[2] or "No reason specified")
+        ut.discord:Say(string.format("Successfully kicked ``%s``.",players[1].name))
+    else
+        ut.discord:Say(string.format("No players matching ``%s``.",args[1]))
+    end
+end)
 ```

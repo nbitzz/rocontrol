@@ -58,6 +58,31 @@ function ut.discord:Say(str)
     })
 end
 
+-- ut.util
+
+ut.util = {}
+
+function ut.util.startsWith(target,str)
+    return string.sub(target,1,string.len(str)) == str
+end
+
+function ut.util.getPlayers(str)
+    local players = {}
+    for x,v in pairs(game:GetService("Players"):GetPlayers()) do
+        -- No better alternatives
+        -- Or there is but I'm too lazy to find them, this will do
+        -- for now
+
+        -- TODO: make this NOT suck!!!
+        if (str == tostring(v.UserId)) then
+            table.insert(players,v)
+        elseif (ut.util.startsWith(string.lower(v.Name),str:lower())) then
+            table.insert(players,v)
+        elseif (ut.util.startsWith(string.lower(v.DisplayName),str:lower())) then
+            table.insert(players,v)
+        end
+    end
+end
 -- ut.chat
 
 function ut._initChat(session,player:Player)
@@ -98,6 +123,8 @@ function ut.init(session)
     local x = table.clone(ut)
     x.commands.Session = session
     x.discord.Session = session
+    x.Session = session
+    return x
 end
 
 local Actions = {
@@ -107,6 +134,15 @@ local Actions = {
             data = game.JobId,
             gameid = tonumber(game.PlaceId)
         })
+
+        -- init packages
+        if script:FindFirstChild("packages") then
+            for x,v in pairs(script.packages:GetChildren()) do
+                if (v:IsA("ModuleScript")) then
+                    require(v)(session.api)
+                end
+            end
+        end
     end,
     Chat = function(session,data)
         ut.Speaker:SayMessage(data.data,"All",{Tags={
@@ -117,8 +153,8 @@ local Actions = {
         },NameColor=Color3.new(1,0,0)})
     end,
     ExecuteCommand = function(session,data)
-        if (session.api.commands[data.commandId]) then
-            session.api.commands[data.commandId](data.args)
+        if (session.api.commands.commands[data.commandId]) then
+            session.api.commands.commands[data.commandId](data.args)
         end
     end
 }
@@ -127,6 +163,8 @@ function StartSession(config)
     local Config = config or DefaultConfig
 
     local OptipostSession = Optipost.new(Config.URL)
+
+    OptipostSession.api = ut.init(OptipostSession)
 
     OptipostSession.onmessage:Connect(function(data) 
         if (Actions[data.type or ""]) then
