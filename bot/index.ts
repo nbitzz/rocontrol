@@ -349,7 +349,12 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         )
 
         session.OldSend({type:"ok"})
-    }
+    },
+    Say:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.data != "string") {return}
+
+        channels.Dynamic[session.id].send(data.data)
+    },
 }
 
 // On connection to Optipost
