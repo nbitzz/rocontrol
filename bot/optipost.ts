@@ -53,7 +53,10 @@ export class OptipostRequest {
     }
 
     Reply(data:BasicReply) {
-        if (this._Dead) {throw new Error("Request already dead");}
+        if (this._Dead) {
+            //throw new Error("Request already dead");
+            console.warn("WARN! Request already dead")
+        }
         this.response.send(JSON.stringify(data))
         clearTimeout(this.Autostop)
         this._Dead = true        
