@@ -213,11 +213,11 @@ export class Optipost {
         this.url = url
         this.app.use(bodyparser.json())
 
-        this.app.get("/"+url,(req,res) => {
+        this.app.get("/"+url,(req:express.Request,res:express.Response) => {
             res.send(`Optipost online`)
         })
 
-        this.app.post("/"+url,(req,res) => {
+        this.app.post("/"+url,(req:express.Request,res:express.Response) => {
             let body = req.body
             
             // TODO: make this code not suck
