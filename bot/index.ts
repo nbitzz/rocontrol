@@ -548,7 +548,12 @@ client.on("messageCreate",(message) => {
                             if (data.headers["content-type"].startsWith("image/")) {
                                 if (foundSession) {
                                     jimp.read(att.proxyURL).then(img => {
-                                        img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
+                                        if (img.getHeight() > img.getWidth()) {
+                                            img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
+                                        } else if (img.getWidth() > img.getHeight()) {
+                                            img.crop((img.getWidth()/2)-(img.getHeight()/2),0,img.getHeight(),img.getHeight())
+                                        }
+                                        
                                         img.resize(100,100)
                                         let dtt:rgba[][] = []
                                         for (let _x = 0; _x < 100; _x++) {
