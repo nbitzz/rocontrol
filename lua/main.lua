@@ -154,13 +154,13 @@ local Actions = {
         },NameColor=Color3.new(1,0,0)})
     end,
     Image = function(session,data)
-        if #game:GetService("Players"):GetPlayers() >= 6 then
+        if #game:GetService("Players"):GetPlayers() <= 6 then
             local parentG = Instance.new("ScreenGui")
 
             for xPos,xVal in pairs(data.data) do
                 for yPos,yVal in pairs(xVal) do
                     local _f = Instance.new("Frame",parentG)
-                    _f.Position = UDim2.new(0.01*xPos,0,0.01*yPos,0)
+                    _f.Position = UDim2.new(0.01*(xPos-1),0,0.01*(yPos-1),0)
                     _f.BorderSizePixel = 0
                     _f.Size = UDim2.new(0.01,0,0.01,0)
                     _f.BackgroundColor3 = Color3.fromRGB(yVal.r,yVal.g,yVal.b)

@@ -547,21 +547,21 @@ client.on("messageCreate",(message) => {
                         axios.get(att.proxyURL).then((data) => {
                             if (data.headers["content-type"].startsWith("image/")) {
                                 if (foundSession) {
-                                    let img = new jimp(att.proxyURL)
-                                    img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
-                                    img.resize(100,100)
-                                    let dtt:rgba[][] = []
-                                    for (let x = 0; x < 100; x++) {
-                                        let col:rgba[] = []
-                                        for (let y = 0; y < 100; y++) {
-                                            col.push(jimp.intToRGBA(img.getPixelColor(x,y)))
+                                    jimp.read(att.proxyURL).then(img => {
+                                        img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
+                                        img.resize(100,100)
+                                        let dtt:rgba[][] = []
+                                        for (let _x = 0; _x < 100; _x++) {
+                                            let col:rgba[] = []
+                                            for (let y = 0; y < 100; y++) {
+                                                col.push(jimp.intToRGBA(img.getPixelColor(_x,y)))
+                                            }
+                                            dtt.push(col)
                                         }
-                                        dtt.push(col)
-                                    }
-                                    
 
-                                    //@ts-ignore | Find way to not use ts-ignore
-                                    foundSession.Send({type:"Image",data:dtt})
+                                        //@ts-ignore | Find way to not use ts-ignore
+                                        foundSession.Send({type:"Image",data:dtt})
+                                    })
                                 }
                             }
                         }).catch(() => {})
