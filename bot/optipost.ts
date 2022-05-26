@@ -56,6 +56,7 @@ export class OptipostRequest {
         if (this._Dead) {
             //throw new Error("Request already dead");
             console.warn("WARN! Request already dead")
+            return
         }
         this.response.send(JSON.stringify(data))
         clearTimeout(this.Autostop)

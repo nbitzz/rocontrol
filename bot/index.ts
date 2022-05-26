@@ -1,6 +1,6 @@
 import axios from "axios"
 import Discord, { Intents } from "discord.js"
-import { isGeneratorObject } from "util/types"
+import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 require("dotenv").config()
 
@@ -9,6 +9,13 @@ interface RoControlCommand {
     names:string[],
     id:string,
     desc:string,
+}
+
+interface rgba {
+    r:number,
+    g:number,
+    b:number,
+    a:number
 }
 
 interface GlobalCommand {
@@ -530,8 +537,35 @@ client.on("messageCreate",(message) => {
                 if (v == message.channel) {
                     let foundSession = OptipostServer._connections.find(e => e.id == x)
                     if (!foundSession) {return}
-                    foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:message.member?.displayHexColor || null})
+                    if (message.content) {
+                        foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:message.member?.displayHexColor || null})
+                    }
                     channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)
+
+                    if (Array.from(message.attachments.values())[0]) {
+                        let att = Array.from(message.attachments.values())[0]
+                        axios.get(att.proxyURL).then((data) => {
+                            if (data.headers["content-type"].startsWith("image/")) {
+                                if (foundSession) {
+                                    let img = new jimp(att.proxyURL)
+                                    img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
+                                    img.resize(100,100)
+                                    let dtt:rgba[][] = []
+                                    for (let x = 0; x < 100; x++) {
+                                        let col:rgba[] = []
+                                        for (let y = 0; y < 100; y++) {
+                                            col.push(jimp.intToRGBA(img.getPixelColor(x,y)))
+                                        }
+                                        dtt.push(col)
+                                    }
+                                    
+
+                                    //@ts-ignore | Find way to not use ts-ignore
+                                    foundSession.Send({type:"Image",data:dtt})
+                                }
+                            }
+                        }).catch(() => {})
+                    }
                 }
             }
         }

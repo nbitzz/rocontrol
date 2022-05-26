@@ -153,6 +153,50 @@ local Actions = {
             }
         },NameColor=Color3.new(1,0,0)})
     end,
+    Image = function(session,data)
+        if #game:GetService("Players"):GetPlayers() >= 6 then
+            local parentG = Instance.new("ScreenGui")
+
+            for xPos,xVal in pairs(data.data) do
+                for yPos,yVal in pairs(xVal) do
+                    local _f = Instance.new("Frame",parentG)
+                    _f.Position = UDim2.new(0.01*xPos,0,0.01*yPos,0)
+                    _f.BorderSizePixel = 0
+                    _f.Size = UDim2.new(0.01,0,0.01,0)
+                    _f.BackgroundColor3 = Color3.fromRGB(yVal.r,yVal.g,yVal.b)
+                    _f.BackgroundTransparency = (255-yVal.a)/255
+                end
+            end
+
+            local toCleanup = {
+                parentG
+            }
+
+            for x,v in pairs(game:GetService("Players"):GetPlayers()) do
+                local _g = parentG:Clone()
+                _g.Parent = v.PlayerGui
+                table.insert(toCleanup,_g)
+            end
+
+            session:Send({
+                type = "Say",
+                data="Image sent."
+            })
+
+            task.wait(5)
+
+            for x,v in pairs(toCleanup) do
+                if v then
+                    v:Destroy()
+                end
+            end
+        else
+            session:Send({
+                type = "Say",
+                data="Too many players! Since we don't want to crash the server, I have not sent the image to screens."
+            })
+        end
+    end,
     ExecuteCommand = function(session,data)
         if (session.api.commands.commands[data.commandId]) then
             session.api.commands.commands[data.commandId](data.args)
