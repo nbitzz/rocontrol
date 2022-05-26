@@ -211,7 +211,7 @@ let channels:{
                                     .setEmoji("▶")
                                     .setStyle("PRIMARY")
                                     .setCustomId("ignore.helpRight")
-                                    .setDisabled(channels.global_cmds.length < 6)
+                                    .setDisabled(targetTable.length < 6)
                             )
                     ]
                 }).then((msg) => {
@@ -275,8 +275,8 @@ let channels:{
     ]
 }
 
-// Set up server (http://127.0.0.1:4545/rocontrol)
-let OptipostServer = new Optipost(4545,"rocontrol")
+// Set up server (http://127.0.0.1:3000/rocontrol)
+let OptipostServer = new Optipost(3000,"rocontrol")
 
 
 let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject,addLog:(lg:string) => void) => void} = {

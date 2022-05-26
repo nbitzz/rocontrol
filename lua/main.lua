@@ -7,7 +7,7 @@ local Optipost = require(script.Optipost)
 
 local DefaultConfig = {
     -- Target URL
-    URL = "http://127.0.0.1:4545/rocontrol"
+    URL = "http://127.0.0.1:3000/rocontrol"
 }
 
 -- Code
