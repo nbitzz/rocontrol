@@ -374,10 +374,11 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 
     let logs:string[] = [
         `RoControl Logs`,
-        `Connection ${Session.id}`
+        `Connection ${Session.id}`,
+        `${Date.now()} ${new Date().toUTCString()}`
     ]
 
-    let addLog = (str:string) => logs.push(str)
+    let addLog = (str:string) => { let dt = new Date(); logs.push(`${dt.toLocaleTimeString('en-GB', { timeZone: 'UTC' })} | ${str}`) }
     channels.logs[Session.id] = addLog
     channels.cmdl[Session.id] = []
 
@@ -433,6 +434,22 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                             channels.Dynamic[Session.id].setParent(channels.Static.archive)
 
                             msg.delete()
+
+                            channels.Dynamic[Session.id]
+                                .send({embeds:[
+                                    new Discord.MessageEmbed()
+                                        .setColor("GREEN")
+                                        .setTitle("Channel archived")
+                                        .setDescription("This channel has been archived.")
+                                ],components:[
+                                    new Discord.MessageActionRow()
+                                        .addComponents(
+                                            new Discord.MessageButton()
+                                                .setStyle("LINK")
+                                                .setURL(url)
+                                                .setLabel("See logs (glot.io)")
+                                        )
+                                ]})
 
                         }
                     })
