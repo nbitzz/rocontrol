@@ -346,6 +346,8 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     RegisterCommand: (session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!Array.isArray(data.names) || typeof data.id != "string" || typeof data.desc != "string" || typeof data.args_amt != "number") {return}
 
+        addLog(`Session registered command: ${data.id} (${data.names.join(",")})`)
+
         channels.cmdl[session.id].push(
             {
                 names:data.names,
@@ -358,7 +360,9 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         session.OldSend({type:"ok"})
     },
     Say:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
-        if (typeof data.data != "string") {return}
+        if (!data.data || typeof data.data != "string") {return}
+        
+        addLog(`Session said: ${data.data}`)
 
         channels.Dynamic[session.id].send(data.data)
     },
@@ -414,7 +418,27 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                                 .setURL(url)
                                 .setLabel("See logs (glot.io)")
                         )
-                ]})
+                ]}).then((msg:Discord.Message) => {
+                    let col = msg.createMessageComponentCollector({componentType:"BUTTON",time:600000})
+
+                    let success = false
+
+                    col.on("collect", (int) => {
+                        int.deferUpdate()
+
+                        if (int.customId == "ARCHIVE_CHANNEL") {
+                            
+                            channels.Dynamic[Session.id].setParent(channels.Static.archive)
+
+                            msg.delete()
+
+                        }
+                    })
+
+                    col.on("end",() => {
+                        msg.channel.delete()
+                    })
+                })
         })
     })
 
@@ -485,6 +509,8 @@ client.on("messageCreate",(message) => {
                         let lastParameter = _args.join(" ")
                         if (lastParameter) {args.push(lastParameter)}
 
+                        channels.logs[foundSession.id](`${message.author.tag} executed a TS command: ${message.content}`)
+
                         try {
                             ltscmd.action(foundSession,message,args)
                         } catch {
@@ -498,6 +524,8 @@ client.on("messageCreate",(message) => {
                             let args =_args.splice(0,lcmd.args-1)
                             let lastParameter = _args.join(" ")
                             if (lastParameter) {args.push(lastParameter)}
+
+                            channels.logs[foundSession.id](`${message.author.tag} ExecuteCommand: ${lcmd.id} (${message.content})`)
 
                             foundSession.Send({
                                 type:"ExecuteCommand",
@@ -539,10 +567,11 @@ client.on("messageCreate",(message) => {
                     if (!foundSession) {return}
                     if (message.content) {
                         foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:message.member?.displayHexColor || null})
+                        channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)
                     }
-                    channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)
 
                     if (Array.from(message.attachments.values())[0]) {
+                        channels.logs[foundSession.id](`${message.author.tag} uploaded an image: ${Array.from(message.attachments.values())[0]}`)
                         let att = Array.from(message.attachments.values())[0]
                         axios.get(att.proxyURL).then((data) => {
                             if (data.headers["content-type"].startsWith("image/")) {
