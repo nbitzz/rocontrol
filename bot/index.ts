@@ -64,7 +64,7 @@ let channels:{
     chnl_webhooks:{[key:string]:Discord.Webhook},
     imgcache:{[key:string]:string},
     cmdl:{[key:string]:RoControlCommand[]},
-    logs:{[key:string]:(lg:string) => void},
+    logs:{[key:string]:(lg:string,addTs?:boolean) => void},
     global_cmds:GlobalCommand[],
     local_cmds:LocalTSCommand[]
 } = {
@@ -286,16 +286,18 @@ let channels:{
 let OptipostServer = new Optipost(3000,"rocontrol")
 
 
-let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject,addLog:(lg:string) => void) => void} = {
+let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject,addLog:(lg:string,ts?:boolean) => void) => void} = {
     GetGameInfo:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.data != "string" || typeof data.gameid != "number") {return}
-        channels.Dynamic[session.id].setName(data.data || "studio-game-"+session.id)
 
         if (data.data) {
-            addLog(`JobId ${data.data}`)
+            addLog(`JobId ${data.data}`,true)
         } else {
-            addLog(`Studio Game`)
+            addLog(`Studio Game`,true)
         }
+        addLog("-".repeat(50),true)
+
+        channels.Dynamic[session.id].setName(data.data || "studio-game-"+session.id)
 
         channels.Dynamic[session.id].send({embeds: [
             new Discord.MessageEmbed()
@@ -303,8 +305,6 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                 .setDescription(`Optipost Session ${session.id}\n\nJobId ${data.data}\nGameId ${data.gameid}`)
                 .setColor("BLURPLE")
         ]})
-
-        addLog("-".repeat(50))
 
         session.OldSend({type:"ok"})
     },
@@ -378,7 +378,9 @@ OptipostServer.connection.then((Session:OptipostSession) => {
         `${Date.now()} ${new Date().toUTCString()}`
     ]
 
-    let addLog = (str:string) => { let dt = new Date(); logs.push(`${dt.toLocaleTimeString('en-GB', { timeZone: 'UTC' })} | ${str}`) }
+
+    // This code sucks and is confusing. TODO: FIX.
+    let addLog = (str:string,addTs?:boolean) => { let dt = new Date(); logs.push(`${!addTs ? dt.toLocaleTimeString('en-GB', { timeZone: 'UTC' }) : ""} ${!addTs ? "|" : ""} ${str}`) }
     channels.logs[Session.id] = addLog
     channels.cmdl[Session.id] = []
 
