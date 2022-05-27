@@ -427,6 +427,8 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                         int.deferUpdate()
 
                         if (int.customId == "ARCHIVE_CHANNEL") {
+
+                            success = true
                             
                             channels.Dynamic[Session.id].setParent(channels.Static.archive)
 
@@ -436,7 +438,9 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                     })
 
                     col.on("end",() => {
-                        msg.channel.delete()
+                        if (!success) {
+                            msg.channel.delete()
+                        }
                     })
                 })
         })
