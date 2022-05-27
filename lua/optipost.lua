@@ -41,7 +41,7 @@ end
 
 function module:Send(data,fakePost)
     if (self.open) then
-        coroutine.resume(coroutine.create(function()
+        task.spawn(function()
             self.OpenPosts += 1
             local x = p(self.url,JSON.stringify({type=({[true]="Ping",[false]="Data"})[not not fakePost],data=data,id=self.id}))
             local data = JSON.parse(x)
@@ -55,7 +55,7 @@ function module:Send(data,fakePost)
             if (data.type == "InvalidSessionId") then
                 self.Close()
             end
-        end))
+        end)
     end
 end
 
