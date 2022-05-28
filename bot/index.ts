@@ -7,7 +7,7 @@ import fs from "fs"
 let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => JSONCompliantObject} = {
     data:{},
     save: function() {
-        fs.writeFile("../data.json",JSON.stringify(this.data),() => {})
+        fs.writeFile("./data.json",JSON.stringify(this.data),() => {})
     },
     write:function(key,value) {
         this.data[key] = value
@@ -17,6 +17,11 @@ let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:strin
         return this.data[key]
     }
 }
+
+fs.readFile("./data.json",(err,buf) => {
+    if (err) {return}
+    PF.data = JSON.parse(buf.toString())
+})
 
 require("dotenv").config()
 
