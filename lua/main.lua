@@ -78,10 +78,8 @@ function ut.data:Get(key)
     if not self.Session then error("Cannot Get when Session is nil.") end
     local d
     local a = self.Session.onmessage:Connect(function(s)
-        if (s.type == "Data") then
-            if s.data.type == "UtData" then
-                d = s.data.data
-            end
+        if s.type == "UtData" and s.key == key then
+            d = s.data
         end
     end)
     self.Session:Send({
