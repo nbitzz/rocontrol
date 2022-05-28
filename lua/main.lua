@@ -77,16 +77,18 @@ function ut.data:Get(key)
     -- Bad method of doing this but I don't wanna use promise api for such a simple thing so
     if not self.Session then error("Cannot Get when Session is nil.") end
     local d
+    local got
     local a = self.Session.onmessage:Connect(function(s)
         if s.type == "UtData" and s.key == key then
             d = s.data
+            got = true
         end
     end)
     self.Session:Send({
         type = "GetData",
         key=key
     })
-    repeat task.wait() until d
+    repeat task.wait() until got
 
     a:Disconnect()
 
