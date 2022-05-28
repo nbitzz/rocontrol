@@ -631,7 +631,7 @@ client.on("messageCreate",(message) => {
                     }
 
                     if (Array.from(message.attachments.values())[0]) {
-                        channels.logs[foundSession.id](`${message.author.tag} uploaded an image: ${Array.from(message.attachments.values())[0]}`)
+                        channels.logs[foundSession.id](`${message.author.tag} uploaded an image: ${Array.from(message.attachments.values())[0].proxyURL}`)
                         let att = Array.from(message.attachments.values())[0]
                         axios.get(att.proxyURL).then((data) => {
                             if (data.headers["content-type"].startsWith("image/")) {
