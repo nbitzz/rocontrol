@@ -7,7 +7,7 @@ local Optipost = require(script.Optipost)
 
 local DefaultConfig = {
     -- Target URL
-    URL = "http://127.0.0.1:3000/rocontrol"
+    URL = "http://127.0.0.1:3000/rocontrol",
 }
 
 -- Code
@@ -68,7 +68,7 @@ end
 
 function ut.util.getPlayers(str)
     local players = {}
-    for x,v in pairs(game:GetService("Players"):GetPlayers()) do
+    for x,v in pairs(Players:GetPlayers()) do
         -- No better alternatives
         -- Or there is but I'm too lazy to find them, this will do
         -- for now
@@ -96,20 +96,20 @@ function ut._initChat(session,player:Player)
             displayname = player.DisplayName
         })
     end)
-    
+
     session.onclose:Connect(function()
         c:Disconnect()
     end)
 end
 
-function ut.chat(session)
+function ut.chat(session) 
     print("Chat logging ready.")
 
-    for x,v in pairs(game:GetService("Players"):GetPlayers()) do
+    for x,v in pairs(Players:GetPlayers()) do
         ut._initChat(session,v)
     end
 
-    local c = game:GetService("Players").PlayerAdded:Connect(function(p)
+    local c = Players.PlayerAdded:Connect(function(p)
         ut._initChat(session,p)
     end)
 
@@ -154,17 +154,18 @@ local Actions = {
         },NameColor=Color3.new(1,0,0)})
     end,
     Image = function(session,data)
-        if #game:GetService("Players"):GetPlayers() <= 6 then
+        if #Players:GetPlayers() <= 6 then
             local parentG = Instance.new("ScreenGui")
 
             for xPos,xVal in pairs(data.data) do
                 for yPos,yVal in pairs(xVal) do
-                    local _f = Instance.new("Frame",parentG)
+                    local _f = Instance.new("Frame")
                     _f.Position = UDim2.new(0.01*(xPos-1),0,0.01*(yPos-1),0)
                     _f.BorderSizePixel = 0
                     _f.Size = UDim2.new(0.01,0,0.01,0)
                     _f.BackgroundColor3 = Color3.fromRGB(yVal.r,yVal.g,yVal.b)
                     _f.BackgroundTransparency = (255-yVal.a)/255
+                    _f.Parent = parentG
                 end
             end
 
@@ -172,7 +173,7 @@ local Actions = {
                 parentG
             }
 
-            for x,v in pairs(game:GetService("Players"):GetPlayers()) do
+            for x,v in pairs(Players:GetPlayers()) do
                 local _g = parentG:Clone()
                 _g.Parent = v.PlayerGui
                 table.insert(toCleanup,_g)
@@ -243,7 +244,7 @@ function StartSession(config)
 
     OptipostSession.api = ut.init(OptipostSession)
 
-    OptipostSession.onmessage:Connect(function(data) 
+    OptipostSession.onmessage:Connect(function(data)
         if (Actions[data.type or ""]) then
             Actions[data.type or ""](OptipostSession,data)
         end
