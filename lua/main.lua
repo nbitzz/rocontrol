@@ -60,11 +60,11 @@ end
 
 -- ut.data
 
-ut.discord = {
+ut.data = {
     Session = nil
 }
 
-function ut.discord:Set(key,value)
+function ut.data:Set(key,value)
     if not self.Session then error("Cannot Set when Session is nil.") end
     self.Session:Send({
         type = "SetData",
@@ -73,7 +73,7 @@ function ut.discord:Set(key,value)
     })
 end
 
-function ut.discord:Get(key)
+function ut.data:Get(key)
     -- Bad method of doing this but I don't wanna use promise api for such a simple thing so
     if not self.Session then error("Cannot Get when Session is nil.") end
     self.Session:Send({
@@ -94,7 +94,9 @@ end
 
 -- ut.util
 
-ut.util = {}
+ut.util = {
+    Session = nil
+}
 
 function ut.util.startsWith(target,str)
     return string.sub(target,1,string.len(str)) == str
@@ -158,6 +160,7 @@ function ut.init(session)
     local x = table.clone(ut)
     x.commands.Session = session
     x.discord.Session = session
+    x.data.Session = session
     x.Session = session
     return x
 end
