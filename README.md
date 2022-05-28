@@ -1,7 +1,9 @@
 # RoControl
 A simple Discord bot that connects to a Roblox game.
 
-Requires discord.js v13, express, axios, dotenv, and body-parser.
+Requires discord.js v13, express, jimp, axios, dotenv, and body-parser. HTTP must be enabled.
+
+**RoControl is not designed for usage in script builders.** If you see RoControl running in a script builder, it is most likely with a custom loader and package.
 
 ## License
 

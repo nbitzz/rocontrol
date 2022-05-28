@@ -2,6 +2,21 @@ import axios from "axios"
 import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
+import fs from "fs"
+
+let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => void} = {
+    data:{},
+    save: function() {
+        fs.writeFile("../data.json",JSON.stringify(this.data),() => {})
+    },
+    write:function(key,value) {
+        this.data[key] = value
+        this.save()
+    },
+    read:function(key) {
+        return this.data[key]
+    }
+}
 
 require("dotenv").config()
 
@@ -366,6 +381,17 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         addLog(`Session said: ${data.data}`)
 
         channels.Dynamic[session.id].send(data.data)
+    },
+    GetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.key != "string") {return}
+        
+        PF.read(data.key)
+    },
+    SetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.key != "string" || typeof data.value != "object") {return}
+
+        //@ts-ignore | TS sucks
+        PF.write(data.key,data.value)
     },
 }
 
