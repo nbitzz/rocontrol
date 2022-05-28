@@ -201,6 +201,38 @@ local Actions = {
         if (session.api.commands.commands[data.commandId]) then
             session.api.commands.commands[data.commandId](data.args)
         end
+    end,
+    SpectateUser = function(session,data)
+        local n = {}
+        for x,v:BasePart in pairs(workspace:GetDescendants()) do
+            
+            local d = {}
+
+            if (v:IsA("BasePart")) then
+                
+                local shape = "Block"
+
+                if (v:IsA("Part")) then
+                    shape = tostring(v.Shape):split(".")[3]
+                end
+
+                d.shape = shape
+                d.position = {x=v.Position.X,y=v.Position.Y,z=v.Position.Z}
+                d.rot = {x=v.Orientation.X,y=v.Orientation.Y,z=v.Orientation.Z}
+                d.color = {r=v.Color.R,g=v.Color.G,b=v.Color.B}
+                d.size = {x=v.Size.X,y=v.Size.Y,z=v.Size.Z}
+
+                table.insert(n,d)
+                
+            end
+
+        end
+
+        session:Send({
+            type="RenderPlaceImage",
+            data=n
+        })
+
     end
 }
 

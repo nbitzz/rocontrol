@@ -2,6 +2,9 @@ import axios from "axios"
 import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
+import THREE from "three"
+import {createCanvas} from "node-canvas-webgl"
+
 require("dotenv").config()
 
 interface RoControlCommand {
@@ -16,6 +19,12 @@ interface rgba {
     g:number,
     b:number,
     a:number
+}
+
+interface v3 {
+    x:number,
+    y:number,
+    z:number
 }
 
 interface GlobalCommand {
@@ -279,6 +288,17 @@ let channels:{
             },
             args:0
         },
+        {
+            names:["spectate","spec"],
+            desc:"Sends back screenshot of game",
+            action:(session,message,args) => {
+                session.Send({
+                    type:"SpectateUser",
+                    user:args[0]
+                })
+            },
+            args:1
+        },
     ]
 }
 
@@ -366,6 +386,67 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
 
         channels.Dynamic[session.id].send(data.data)
     },
+    // This code sucks. Todo: make it not suck
+    RenderPlaceImage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(70);
+
+        let canvas = createCanvas(800, 400);
+
+        let renderer = new THREE.WebGLRenderer({canvas});
+
+        if (!data.data) {return}
+
+        //@ts-ignore | Typescript you're stupid
+        if (!data.data.camera) {return}
+        //@ts-ignore
+        let sc:{color:rgba,size:v3,position:v3,rot:v3,shape:string}[] = data.data.objects
+        
+
+        let addThing = function(color:rgba,size:v3,position:v3,rot:v3,shape:string) {
+            let geometry
+            switch(shape) {
+                case "Block":
+                    geometry = new THREE.BoxGeometry(size.x,size.y,size.z);
+                break
+                case "Ball":
+                    geometry = new THREE.SphereGeometry(size.x,size.y,size.z);
+                break
+                case "Cylinder":
+                    geometry = new THREE.CylinderGeometry(size.x,size.y,size.z);
+                break
+            }
+            let material = new THREE.MeshStandardMaterial({color: jimp.rgbaToInt(color.r,color.g,color.b,color.a)});
+            let obj = new THREE.Mesh(geometry, material)
+            obj.position.x = position.x
+            obj.position.y = position.y
+            obj.position.z = position.z
+            obj.rotation.x = rot.x
+            obj.rotation.y = rot.y
+            obj.rotation.z = rot.z
+
+            scene.add(obj)
+        }
+
+        sc.forEach((v) => {
+            addThing(v.color,v.size,v.position,v.rot,v.shape)
+        })
+
+        //@ts-ignore
+        camera.position.x,camera.position.y,camera.position.z = data.data.camera.position.x,data.data.camera.position.y,data.data.camera.position.z
+        //@ts-ignore
+        camera.rotation.x,camera.rotation.y,camera.rotation.z = data.data.rot.position.x,data.data.rot.position.y,data.data.camera.rot.z
+
+        renderer.render(scene,camera)
+        if (!channels.Dynamic[session.id]) {return}
+        channels.Dynamic[session.id].send({files:[
+            {
+                name:"spec.png",
+                //@ts-ignore
+                file:canvas.toBuffer("image/png")
+            }
+        ]})
+    }
 }
 
 // On connection to Optipost
@@ -396,7 +477,11 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 
     Session.message.then((data) => {
         if (typeof data.type != "string") {return}
-        OptipostActions[data.type](Session,data,addLog)
+        try {
+            OptipostActions[data.type](Session,data,addLog)
+        } catch(e) {
+            console.error(e)
+        }
     })
 
     Session.death.then(() => {
