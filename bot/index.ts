@@ -4,7 +4,7 @@ import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
 
-let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => void} = {
+let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => JSONCompliantObject} = {
     data:{},
     save: function() {
         fs.writeFile("../data.json",JSON.stringify(this.data),() => {})
@@ -385,13 +385,14 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     GetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.key != "string") {return}
         
-        PF.read(data.key)
+        session.Send({type:"UtData",data:PF.read(data.key),key:data.key})
     },
     SetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
-        if (typeof data.key != "string" || typeof data.value != "object") {return}
+        if (typeof data.key != "string") {return}
 
         //@ts-ignore | TS sucks
         PF.write(data.key,data.value)
+        session.OldSend({type:"ok"})
     },
 }
 

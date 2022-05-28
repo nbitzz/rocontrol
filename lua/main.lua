@@ -58,6 +58,40 @@ function ut.discord:Say(str)
     })
 end
 
+-- ut.data
+
+ut.discord = {
+    Session = nil
+}
+
+function ut.discord:Set(key,value)
+    if not self.Session then error("Cannot Set when Session is nil.") end
+    self.Session:Send({
+        type = "SetData",
+        value=value,
+        key=key
+    })
+end
+
+function ut.discord:Get(key)
+    -- Bad method of doing this but I don't wanna use promise api for such a simple thing so
+    if not self.Session then error("Cannot Get when Session is nil.") end
+    self.Session:Send({
+        type = "GetData",
+        key=key
+    })
+    local d
+    local a = self.Session.onmessage:Connect(function(s)
+        if (s.type == "Data") then
+            if s.data.type == "UtData" then
+                d = s.data.data
+            end
+        end
+    end)
+    repeat task.wait() until d
+    return d
+end
+
 -- ut.util
 
 ut.util = {}

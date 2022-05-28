@@ -46,6 +46,16 @@ ut.commands:AddCommand("testapp.test",{"test"},"Test command",1,function(args)
 end)
 ```
 
+## Data
+
+### void ut.data:Set(key,value)
+
+Sets data
+
+### any ut.data:Get(key)
+
+Returns data
+
 ## Discord
 
 ### void ut.discord:Say(str)
@@ -57,11 +67,11 @@ ut.discord:Say("Hello world!")
 
 ## Util
 
-### ut.util.startsWith(target,str)
+### boolean ut.util.startsWith(target,str)
 
 Checks if a string starts with another string
 
-### ut.util.getPlayers(search:string)
+### Array<Player> ut.util.getPlayers(search:string)
 
 Search for players. Returns array.
 ```lua
