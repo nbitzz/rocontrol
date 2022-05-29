@@ -52,7 +52,7 @@ end)
 
 Sets data
 
-### any ut.data:Get(key)
+### YIELDS any ut.data:Get(key)
 
 Returns data
 
