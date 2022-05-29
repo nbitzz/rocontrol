@@ -12,6 +12,8 @@ Set of APIs used to add commands to RoControl
 
 [Util](#util)
 
+[Server](#server)
+
 ## ut
 
 ### ut.chat(session)
@@ -123,4 +125,33 @@ ut.commands:addCommand("mod.kick",{"kick","k"},"Kick plr",2,function(args)
         ut.discord:Say(string.format("No players matching ``%s``.",args[1]))
     end
 end)
+```
+
+## Server
+
+### {r:number,g:number,b:number,a:number}[][] ut.server:ProcessImage(url)
+Resizes and crops image to 100x100 and converts it to pixels. 
+
+```lua
+local cat = ut.server:ProcessImage("http://loremflickr.com/100/100/cat")
+local testPart = Instance.new("Part")
+local pSG = Instance.new("SurfaceGui",testPart)
+testPart.Size = Vector3.new(3,3,1)
+testPart.Position = Vector3.new(0,50,0)
+
+for xPos,column in pairs(cat) do
+    local csK = {}
+    for yPos,color in pairs(column) do
+        table.insert(csK,ColorSequenceKeypoint.new(yPos*0.01,Color3.fromRGB(color.r,color.g,color.b)))
+    end
+    local f = Instance.new("Frame",pSG)
+    f.Position = UDim2.new(xPos*0.01,0,0,0)
+    f.Size = UDim2.new(0.01,0,1,0)
+    f.BorderSizePixel = 0
+    f.BackgroundColor3 = Color3.new(1,1,1)
+    local g = Instance.new("UIGradient",f)
+    g.Rotation = 90
+    g.Color = ColorSequence.new(csK)
+    g.Parent = f
+end
 ```

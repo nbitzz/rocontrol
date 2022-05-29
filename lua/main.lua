@@ -23,6 +23,37 @@ ut.ChatService = require(
 ut.Speaker = ut.ChatService:AddSpeaker("RoControl")
 ut.Speaker:JoinChannel("All")
 
+-- ut.YieldGet
+
+function ut.YieldGet(session,data,callbackName)
+    -- Bad method of doing this but I don't wanna use promise api for now
+    if not session then error("Cannot RF when Session is nil.") end
+    local d
+    local got
+    local key = tostring(math.random())
+    local a = session.onmessage:Connect(function(s)
+        if s.type == callbackName and s.key == key then
+            d = s.data
+            got = true
+        end
+    end)
+
+    local realData = {
+        key=key
+    }
+
+    for x,v in pairs(data) do
+        realData[x] = v
+    end
+
+    session:Send(realData)
+    repeat task.wait() until got
+
+    a:Disconnect()
+
+    return d
+end
+
 -- ut commands
 
 ut.commands = {
@@ -42,6 +73,21 @@ function ut.commands:addCommand(id,commandAliases,desc,args_amt,action)
         args_amt = args_amt,
         desc=desc
     })
+end
+
+-- ut.server
+
+ut.server = {
+    Session = nil
+}
+
+function ut.server:ProcessImage(url)
+    if not self.Session then error("Cannot ProcessImage when Session is nil.") end
+    if not url then error("Cannot ProcessImage when no URL is passed.") end
+    return ut.YieldGet(self.Session,{
+        type = "ProcessImage",
+        url=url
+    },"ProcessedImage")
 end
 
 -- ut.discord
@@ -85,27 +131,12 @@ end
 
 function ut.discord:Send(str)
     if (not str) then error("Cannot Send empty string") end
-    -- Bad method of doing this but I don't wanna use promise api for such a simple thing so
     if not self.Session then error("Cannot Send when Session is nil.") end
-    local key = tostring(math.random())
-    local d
-    local a = self.Session.onmessage:Connect(function(s)
-        if s.type == "MessageSent" and s.key == key then
-            d = s.data
-        end
-    end)
-
-    self.Session:Send({
+    
+    return ut.YieldGet(self.Session,{
         type = "SendMessage",
-        key=key,
         data=str
-    })
-
-    repeat task.wait() until d
-
-    a:Disconnect()
-
-    return d
+    },"MessageSent")
 end
 
 
@@ -125,25 +156,12 @@ function ut.data:Set(key,value)
 end
 
 function ut.data:Get(key)
-    -- Bad method of doing this but I don't wanna use promise api for such a simple thing so
     if not self.Session then error("Cannot Get when Session is nil.") end
-    local d
-    local got
-    local a = self.Session.onmessage:Connect(function(s)
-        if s.type == "UtData" and s.key == key then
-            d = s.data
-            got = true
-        end
-    end)
-    self.Session:Send({
+    
+    return ut.YieldGet(self.Session,{
         type = "GetData",
         key=key
-    })
-    repeat task.wait() until got
-
-    a:Disconnect()
-
-    return d
+    },"UtData")
 end
 
 -- ut.util
@@ -212,9 +230,11 @@ end
 
 function ut.init(session)
     local x = table.clone(ut)
-    x.commands.Session = session
-    x.discord.Session = session
-    x.data.Session = session
+    for _,v in pairs(x) do
+        if typeof(v) == "table" then
+            v.Session = session
+        end
+    end
     x.Session = session
     return x
 end

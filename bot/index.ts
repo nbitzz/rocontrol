@@ -3,7 +3,6 @@ import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
-import { send } from "process"
 
 let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => JSONCompliantObject} = {
     data:{},
@@ -432,9 +431,42 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     SetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.key != "string") {return}
 
-        //@ts-ignore | TS sucks
+        //@ts-ignore | TS stupidness (or my stupidness)
         PF.write(data.key,data.value)
         session.OldSend({type:"ok"})
+    },
+    ProcessImage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.url != "string") {return}
+        let url = data.url
+
+        axios.get(url).then((data) => {
+            if (data.headers["content-type"].startsWith("image/")) {
+                jimp.read(url).then(img => {
+                    if (img.getHeight() > img.getWidth()) {
+                        img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
+                    } else if (img.getWidth() > img.getHeight()) {
+                        img.crop((img.getWidth()/2)-(img.getHeight()/2),0,img.getHeight(),img.getHeight())
+                    }
+                    
+                    img.resize(100,100)
+                    let dtt:rgba[][] = []
+                    for (let _x = 0; _x < 100; _x++) {
+                        let col:rgba[] = []
+                        for (let y = 0; y < 100; y++) {
+                            col.push(jimp.intToRGBA(img.getPixelColor(_x,y)))
+                        }
+                        dtt.push(col)
+                    }
+
+                    //@ts-ignore | Find way to not use ts-ignore
+                    session.Send({type:"ProcessedImage",data:dtt})
+                })
+            } else {
+                session.Send({type:"ProcessedImage",data:"Invalid image"})
+            }
+        }).catch(() => {
+            session.Send({type:"ProcessedImage",data:"Invalid image"})
+        })
     },
 }
 
@@ -493,7 +525,12 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                             new Discord.MessageButton()
                                 .setStyle("LINK")
                                 .setURL(url)
-                                .setLabel("See logs (glot.io)")
+                                .setLabel("See logs (glot.io)"),
+                            new Discord.MessageButton()
+                                .setCustomId("DELETE_CHANNEL")
+                                .setEmoji("✖")
+                                .setStyle("DANGER")
+                                .setLabel("Delete"),
                         )
                 ]}).then((msg:Discord.Message) => {
                     let col = msg.createMessageComponentCollector({componentType:"BUTTON",time:600000})
@@ -501,9 +538,10 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                     let success = false
 
                     col.on("collect", (int) => {
-                        int.deferUpdate()
 
-                        if (int.customId == "ARCHIVE_CHANNEL") {
+                        switch (int.customId) {
+                            case "ARCHIVE_CHANNEL":
+                            int.deferUpdate()
 
                             success = true
                             
@@ -526,7 +564,9 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                                                 .setLabel("See logs (glot.io)")
                                         )
                                 ]})
-
+                        break
+                        case "DELETE_CHANNEL":
+                            channels.Dynamic[Session.id].delete()
                         }
                     })
 
