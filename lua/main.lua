@@ -83,7 +83,7 @@ function ut.discord:ViaWebhook(data)
     })
 end
 
-function ut.data:Send(str)
+function ut.discord:Send(str)
     -- Bad method of doing this but I don't wanna use promise api for such a simple thing so
     if not self.Session then error("Cannot Send when Session is nil.") end
     local key = tostring(math.random())
