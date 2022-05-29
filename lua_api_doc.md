@@ -154,4 +154,5 @@ for xPos,column in pairs(cat) do
     g.Color = ColorSequence.new(csK)
     g.Parent = f
 end
+testPart.Parent = workspace
 ```
