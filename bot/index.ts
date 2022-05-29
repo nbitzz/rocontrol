@@ -438,6 +438,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     ProcessImage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.url != "string") {return}
         let url = data.url
+        let key = data.key
 
         axios.get(url).then((data) => {
             if (data.headers["content-type"].startsWith("image/")) {
@@ -459,13 +460,13 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                     }
 
                     //@ts-ignore | Find way to not use ts-ignore
-                    session.Send({type:"ProcessedImage",data:dtt})
+                    session.Send({type:"ProcessedImage",data:dtt,key:key})
                 })
             } else {
-                session.Send({type:"ProcessedImage",data:"Invalid image"})
+                session.Send({type:"ProcessedImage",data:"Invalid image",key:key})
             }
         }).catch(() => {
-            session.Send({type:"ProcessedImage",data:"Failed to get image"})
+            session.Send({type:"ProcessedImage",data:"Failed to get image",key:key})
         })
     },
 }
@@ -501,7 +502,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
         try {
             OptipostActions[data.type](Session,data,addLog)
         } catch(e) {
-            console.error(e)
+            console.log(e)
         }
     })
 
