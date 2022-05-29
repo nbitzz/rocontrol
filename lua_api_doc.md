@@ -65,6 +65,45 @@ Sends a message in the connected Discord channel
 ut.discord:Say("Hello world!")
 ```
 
+### void ut.discord:Say(str)
+
+Sends a message in the connected Discord channel
+```lua
+ut.discord:Say("Hello world!")
+```
+
+### YIELDS string ut.discord:Send(str)
+
+Sends a message in the connected Discord channel. Returns the ID.
+```lua
+ut.discord:Send("Hello world!")
+```
+
+### void ut.discord:Edit(id,str)
+
+Edits a message in the connected Discord channel
+```lua
+ut.discord:Edit(id,"Hello world!")
+```
+
+### void ut.discord:Delete(id)
+
+Deletes a message in the connected Discord channel
+```lua
+ut.discord:Delete(id)
+```
+
+### void ut.discord:ViaWebhook(data)
+
+Sends a message in the connected Discord channel using the webhook used for chat messages
+```lua
+ut.discord:ViaWebhook({
+    content="Hello world!",
+    avatar_url="http://loremflickr.com/64/64/cat",
+    username="Hello"
+})
+```
+
 ## Util
 
 ### boolean ut.util.startsWith(target,str)

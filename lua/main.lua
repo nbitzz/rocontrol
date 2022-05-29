@@ -51,12 +51,60 @@ ut.discord = {
 }
 
 function ut.discord:Say(str)
-    if not self.Session then error("Cannot say when Session is nil.") end
+    if not self.Session then error("Cannot Say when Session is nil.") end
     self.Session:Send({
         type = "Say",
         data=str
     })
 end
+
+function ut.discord:Edit(id,str)
+    if not self.Session then error("Cannot Edit when Session is nil.") end
+    self.Session:Send({
+        type = "EditMessage",
+        data= str,
+        id=id
+    })
+end
+
+function ut.discord:Delete(id)
+    if not self.Session then error("Cannot Delete when Session is nil.") end
+    self.Session:Send({
+        type = "DeleteMessage",
+        data=id
+    })
+end
+
+function ut.discord:ViaWebhook(data)
+    if not self.Session then error("Cannot ViaWebhook when Session is nil.") end
+    self.Session:Send({
+        type = "ViaWebhook",
+        data=data
+    })
+end
+
+function ut.data:Send(str)
+    -- Bad method of doing this but I don't wanna use promise api for such a simple thing so
+    if not self.Session then error("Cannot Send when Session is nil.") end
+    local key = tostring(math.random())
+    local d
+    local a = self.Session.onmessage:Connect(function(s)
+        if s.type == "MessageSent" and s.key == key then
+            d = s.data
+        end
+    end)
+    self.Session:Send({
+        type = "SendMessage",
+        key=key,
+        data=str
+    })
+    repeat task.wait() until d
+
+    a:Disconnect()
+
+    return d
+end
+
 
 -- ut.data
 

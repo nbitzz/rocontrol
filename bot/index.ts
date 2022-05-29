@@ -3,6 +3,7 @@ import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
+import { send } from "process"
 
 let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => JSONCompliantObject} = {
     data:{},
@@ -294,7 +295,7 @@ let channels:{
         },
         {
             names:["disconnect","fd"],
-            desc:"Disconnect the game from RoConnect",
+            desc:"Disconnect the game from RoControl",
             action:(session,message,args) => {
                 session.Close()
             },
@@ -383,9 +384,45 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     Say:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!data.data || typeof data.data != "string") {return}
         
-        addLog(`Session said: ${data.data}`)
+        addLog(data.data,true)
 
         channels.Dynamic[session.id].send(data.data)
+    },
+    ViaWebhook:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (!data.data) {return}
+        axios.post(channels.chnl_webhooks[session.id].url,data.data).catch(() => {})
+    },
+    SendMessage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (!data.data || typeof data.data != "string") {return}
+        
+        addLog(data.data,true)
+
+        channels.Dynamic[session.id].send(data.data).then((msg) => {
+            session.Send({
+                type:"MessageSent",
+                data:msg.id,
+                key:data.key
+            })
+        })
+    },
+    DeleteMessage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (!data.data || typeof data.data != "string") {return}
+        
+        addLog(`Session deleted message: ${data.data}`)
+
+        channels.Dynamic[session.id].messages.fetch(data.data).then((msg) => {
+            msg.delete()
+        }).catch(() => {})
+    },
+    EditMessage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (!data.id || typeof data.id != "string") {return}
+        
+        addLog(`Session edited message: ${data.id}`)
+
+        channels.Dynamic[session.id].messages.fetch(data.id).then((msg) => {
+            if (typeof data.data != "string") {return} // ts stupidness
+            msg.edit(data.data)
+        }).catch(() => {})
     },
     GetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.key != "string") {return}
