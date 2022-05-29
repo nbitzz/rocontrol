@@ -84,6 +84,7 @@ function ut.discord:ViaWebhook(data)
 end
 
 function ut.discord:Send(str)
+    if (not str) then error("Cannot Send empty string") end
     -- Bad method of doing this but I don't wanna use promise api for such a simple thing so
     if not self.Session then error("Cannot Send when Session is nil.") end
     local key = tostring(math.random())
@@ -93,11 +94,13 @@ function ut.discord:Send(str)
             d = s.data
         end
     end)
+
     self.Session:Send({
         type = "SendMessage",
         key=key,
         data=str
     })
+
     repeat task.wait() until d
 
     a:Disconnect()
