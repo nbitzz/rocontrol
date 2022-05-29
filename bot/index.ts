@@ -465,7 +465,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                 session.Send({type:"ProcessedImage",data:"Invalid image"})
             }
         }).catch(() => {
-            session.Send({type:"ProcessedImage",data:"Invalid image"})
+            session.Send({type:"ProcessedImage",data:"Failed to get image"})
         })
     },
 }
@@ -571,7 +571,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                     })
 
                     col.on("end",() => {
-                        if (!success) {
+                        if (!success && msg.channel) {
                             msg.channel.delete()
                         }
                     })
