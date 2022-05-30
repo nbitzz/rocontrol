@@ -30,6 +30,34 @@ function module.new(url:string)
     return clone
 end
 
+function module:On(filter,callback)
+    if (not filter) then filter = {} end
+    local connection = self.onmessage:Connect(function(data) 
+        for x,v in pairs(filter) do
+            if (v ~= data[x]) then return end -- Filter
+        end
+
+        callback(data)
+    end)
+
+    return function() connection:Disconnect() end
+end
+
+function module:Once(filter,callback)
+    if (not filter) then filter = {} end
+    local connection
+    connection = self.onmessage:Connect(function(data) 
+        for x,v in pairs(filter) do
+            if (v ~= data[x]) then return end -- Filter
+        end
+
+        callback(data)
+        connection:Disconnect()
+    end)
+
+    return function() connection:Disconnect() end
+end
+
 function module:Open()
     if pcall(function() g(self.url) end) then
         self.id = JSON.parse(p(self.url,JSON.stringify({type="EstablishConnection",data={}}))).data.id

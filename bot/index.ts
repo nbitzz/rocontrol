@@ -86,6 +86,7 @@ let channels:{
     imgcache:{[key:string]:string},
     cmdl:{[key:string]:RoControlCommand[]},
     logs:{[key:string]:(lg:string,addTs?:boolean) => void},
+    other:{[key:string]:{[key:string]:any}},
     global_cmds:GlobalCommand[],
     local_cmds:LocalTSCommand[]
 } = {
@@ -99,6 +100,7 @@ let channels:{
     imgcache:{},
     cmdl:{},
     logs:{},
+    other:{},
     global_cmds:[
         {
             names:["help","h"],
@@ -476,8 +478,19 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         axios.get(data.url).then((dt) => {
             session.Send({type:"GotHttp",data:dt.data,headers:dt.headers,key:data.key,error:false})
         }).catch((err) => {
-            session.Send({type:"GotHttp",error:true})
+            session.Send({type:"GotHttp",key:data.key,error:true})
         })
+    },
+    GetDiscordToRobloxChatEnabled:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        session.Send({type:"GetDiscordToRobloxChatEnabled",data:channels.other[session.id].DTRChatEnabled || false,key:data.key})
+    },
+    SetDiscordToRobloxChatEnabled:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.data != "boolean") {return}
+        channels.other[session.id].DTRChatEnabled = data.data
+    },
+    RunEval:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.data != "string") {return}
+        eval(data.data)
     },
 }
 
@@ -491,6 +504,9 @@ OptipostServer.connection.then((Session:OptipostSession) => {
         `${Date.now()} ${new Date().toUTCString()}`
     ]
 
+    channels.other[Session.id] = {
+        DTRChatEnabled:true
+    }
 
     // This code sucks and is confusing. TODO: FIX.
     let addLog = (str:string,addTs?:boolean) => { let dt = new Date(); logs.push(`${!addTs ? dt.toLocaleTimeString('en-GB', { timeZone: 'UTC' }) : ""} ${!addTs ? "|" : ""} ${str}`) }
@@ -508,9 +524,12 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     })
 
     Session.message.then((data) => {
+        let Endp:string[] = _config["api-disable"] || []
         if (typeof data.type != "string") {return}
         try {
-            OptipostActions[data.type](Session,data,addLog)
+            if (!Endp.find(e => e == data.type)) {
+                OptipostActions[data.type](Session,data,addLog)
+            }
         } catch(e) {
             console.log(e)
         }
@@ -721,6 +740,7 @@ client.on("messageCreate",(message) => {
                 if (v == message.channel) {
                     let foundSession = OptipostServer._connections.find(e => e.id == x)
                     if (!foundSession) {return}
+                    if (!channels.other[foundSession.id].DTRChatEnabled) {return}
                     if (message.content) {
                         foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:message.member?.displayHexColor || null})
                         channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)

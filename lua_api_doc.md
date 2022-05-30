@@ -14,6 +14,8 @@ Set of APIs used to add commands to RoControl
 
 [Server](#server)
 
+[Session](#session)
+
 ## ut
 
 ### ut.chat(session)
@@ -43,7 +45,7 @@ Contains all the commands
 
 Adds a command
 ```lua
-ut.commands:AddCommand("testapp.test",{"test"},"Test command",1,function(args) 
+ut.commands:addCommand("testapp.test",{"test"},"Test command",1,function(args) 
     ut.discord:Say("You passed in: "..args[1])
 end)
 ```
@@ -59,13 +61,6 @@ Sets data
 Returns data
 
 ## Discord
-
-### void ut.discord:Say(str)
-
-Sends a message in the connected Discord channel
-```lua
-ut.discord:Say("Hello world!")
-```
 
 ### void ut.discord:Say(str)
 
@@ -106,6 +101,20 @@ ut.discord:ViaWebhook({
 })
 ```
 
+### YIELDS boolean ut.discord:GetChatEnabled()
+Returns whether or not Discord to Roblox chat is enabled.
+
+### void ut.discord:SetChatEnabled(enabled)
+
+Disable/enable Discord to Roblox chat.
+```lua
+ut.commands:addCommand("testapp.vanish",{"vanish"},"Disable/enable Discord to Roblox chat",1,function(args) 
+    local enabled = not ut.discord:GetChatEnabled()
+    ut.discord:Say(enabled and "Discord to Roblox chat enabled" or "Discord to Roblox chat disabled")
+    ut.discord:SetChatEnabled(enabled)
+end)
+```
+
 ## Util
 
 ### boolean ut.util.startsWith(target,str)
@@ -128,6 +137,9 @@ end)
 ```
 
 ## Server
+
+### ut.server:Eval(str)
+Runs eval() on the RoControl server. **It is recommended to either disable this function using config.json's api-disable, or wait for a way to add passwords to RoControl in the future.**
 
 ### YIELDS {data: {[key: string]: any}, headers:{[key: string]: any}, error:boolean} ut.server:Get(url)
 Uses the server to send a GET request.
@@ -164,3 +176,27 @@ for xPos,column in pairs(cat) do
 end
 testPart.Parent = workspace
 ```
+
+## Session
+
+This section documents Optipost. **ONLY** use this if you're trying to manipulate Optipost.
+
+### void ut.Session:Open()
+
+Opens session. Do not use.
+
+### void ut.Session:Send(data,isPing)
+
+Sends data. isPing is only used internally. If it is true, the data will not be processed.
+
+### void ut.Session:Close()
+
+Closes the session.
+
+### ()=>void ut.Session:Once(filter,callback)
+
+Listens for new requests that match the filter, then calls the callback function. The connection is automatically disconnected after a request meets the filter. Calling the returned function will disconnect the event.
+
+### ()=>void ut.Session:On(filter,callback)
+
+Listens for new requests that match the filter, then calls the callback function. Calling the returned function will disconnect the event.

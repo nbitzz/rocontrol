@@ -99,6 +99,15 @@ function ut.server:Get(url)
     },"GotHttp")
 end
 
+function ut.server:Eval(url)
+    if not self.Session then error("Cannot Get when Session is nil.") end
+    if not url then error("Cannot Get when no URL is passed.") end
+    return ut.YieldGet(self.Session,{
+        type = "HttpGet",
+        url=url
+    },"GotHttp")
+end
+
 -- ut.discord
 
 ut.discord = {
@@ -147,6 +156,24 @@ function ut.discord:Send(str)
         data=str
     },"MessageSent")
 end
+
+function ut.discord:GetChatEnabled()
+    if not self.Session then error("Cannot GetChatEnabled when Session is nil.") end
+    
+    return ut.YieldGet(self.Session,{
+        type = "GetDiscordToRobloxChatEnabled"
+    },"GetDiscordToRobloxChatEnabled")
+end
+
+function ut.discord:SetChatEnabled(bool)
+    if not self.Session then error("Cannot SetChatEnabled when Session is nil.") end
+    
+    self.Session:Send({
+        type = "SetDiscordToRobloxChatEnabled",
+        data=bool
+    })
+end
+
 
 
 -- ut.data
@@ -245,6 +272,8 @@ function ut.init(session)
             v.Session = session
         end
     end
+    x.discord._Chatted = Instance.new("BindableEvent")
+    x.discord.Chatted = x.discord._Chatted.Event
     x.Session = session
     return x
 end

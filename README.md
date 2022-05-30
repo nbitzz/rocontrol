@@ -20,7 +20,11 @@ Your config.json file should look like this:
 	"serverCategory":"978438656664678410",
 	"archiveCategory":"978517203018219561",
 	"prefix":">",
-	"role":"980692476769734666" // Optional
+	"role":"980692476769734666", // Optional
+	"api-disable":[ // Add this field to block certain API endpoints from being run on the server
+		"RunEval"
+	] 
+	// Adding RunEval this to api-disable will prevent ut.server:Eva() from being run. This is recommended. If you don't add this to api-disable, anyone who connects to your RoControl host server can run custom code.
 }
 ```
 
