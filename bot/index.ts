@@ -741,7 +741,7 @@ client.on("messageCreate",(message) => {
                     if (!foundSession) {return}
                     if (!channels.other[foundSession.id].DTRChatEnabled) {return}
                     if (message.content) {
-                        foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:message.member?.displayHexColor || null})
+                        foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:message.member?.displayHexColor || "ffefcd"})
                         channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)
                     }
 
