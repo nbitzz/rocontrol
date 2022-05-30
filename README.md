@@ -1,7 +1,7 @@
 # RoControl
 A simple Discord bot that connects to a Roblox game.
 
-Requires discord.js v13, express, jimp, axios, dotenv, and body-parser. HTTP must be enabled.
+Requires discord.js v13, express, jimp, axios, and body-parser. HTTP must be enabled.
 
 **RoControl is not designed for usage in script builders.** If you see RoControl running in a script builder, it is most likely with a custom loader and package.
 
@@ -9,7 +9,22 @@ Requires discord.js v13, express, jimp, axios, dotenv, and body-parser. HTTP mus
 
 RoControl is licensed under the GNU GPL v2 license. [View it here.](https://github.com/nbitzz/rocontrol/blob/main/LICENSE)
 
-## Setup
+## Setup (New)
+
+Press CTRL + SHIFT + B in Visual Studio Code (or run `npx tsc`), then create a config.json file. Run the `./server_out/index.js` script using Node.js.
+Your config.json file should look like this:
+```json
+{
+    "token":"DEMO.TOKEN",
+    "targetGuild":"957424000265506846",
+	"serverCategory":"978438656664678410",
+	"archiveCategory":"978517203018219561",
+	"prefix":">",
+	"role":"980692476769734666" // Optional
+}
+```
+
+## Setup (Old)
 
 Press CTRL + SHIFT + B in Visual Studio Code (or run `npx tsc`), then create a .env file, and set the TOKEN variable to your bot's token. Run the `./server_out/index.js` script using Node.js.
 Also, in .env, make sure to include the target guild's ID, the category you want to display the active servers, an archive category, and the bot prefix. **WARNING: The bot will automatically clear this category of all of its channels on startup. Please create a new category for RoControl.**

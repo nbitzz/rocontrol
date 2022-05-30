@@ -2,3 +2,4 @@ node_modules
 .env
 roblox.toml
 selene.toml
+config.json

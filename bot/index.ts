@@ -4,6 +4,8 @@ import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
 
+let _config = require("../config.json")
+
 let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => JSONCompliantObject} = {
     data:{},
     save: function() {
@@ -22,8 +24,6 @@ fs.readFile("./data.json",(err,buf) => {
     if (err) {return}
     PF.data = JSON.parse(buf.toString())
 })
-
-require("dotenv").config()
 
 interface RoControlCommand {
     args:number,
@@ -66,8 +66,8 @@ let client = new Discord.Client({ intents: [
 
 let clamp = (min:number,max:number,target:number) => Math.min(Math.max(target,min),max)
 
-if (!process.env.RC_PFX) {process.exit()}
-let prefix:string = process.env.RC_PFX
+if (!_config.prefix) {process.exit()}
+let prefix:string = _config.prefix
 
 let make_glot_post:(data:string) => Promise<string> = (data:string) => {
     return new Promise((resolve,reject) => {
@@ -386,7 +386,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         addLog(data.data,true)
 
         if (data.data.length <= 2000) {
-            channels.Dynamic[session.id].send(data.data)
+            channels.Dynamic[session.id].send(data.data).catch(() => {})
         }
     },
     ViaWebhook:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
@@ -404,7 +404,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                 data:msg.id,
                 key:data.key
             })
-        })
+        }).catch(() => {})
     },
     DeleteMessage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!data.data || typeof data.data != "string") {return}
@@ -463,7 +463,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
 
                     //@ts-ignore | Find way to not use ts-ignore
                     session.Send({type:"ProcessedImage",data:dtt,key:key})
-                })
+                }).catch((e) => {})
             } else {
                 session.Send({type:"ProcessedImage",data:"Invalid image",key:key})
             }
@@ -603,15 +603,18 @@ client.on("ready",() => {
         ],
     })
 
-    if (!process.env.TARGET_GUILD) {console.log("no process.env.TARGET_GUILD");process.exit(2)}
-    client.guilds.fetch(process.env.TARGET_GUILD.toString()).then((guild) => {
+    if (!_config.targetGuild) {console.log("no targetGuild");process.exit(2)}
+
+    client.guilds.fetch(_config.targetGuild.toString()).then((guild) => {
+
         channels.Static.targetGuild = guild
-        if (!process.env.CATEGORY) {console.log("no process.env.CATEGORY");process.exit(2)}
-        guild.channels.fetch(process.env.CATEGORY).then((cat) => {
+        if (!_config.serverCategory) {console.log("no serverCategory");process.exit(2)}
+        
+        guild.channels.fetch(_config.serverCategory).then((cat) => {
             if (!cat) {console.log("no category");process.exit(2)}
             if (cat.isText() || cat.isVoice()) {console.log("not category");process.exit(2)}
-            if (!process.env.ARCHIVE_CATEGORY) {console.log("no process.env.ARCHIVE_CATEGORY");process.exit(2)}
-            guild.channels.fetch(process.env.ARCHIVE_CATEGORY).then((acat) => {
+            if (!_config.archiveCategory) {console.log("no process.env.ARCHIVE_CATEGORY");process.exit(2)}
+            guild.channels.fetch(_config.archiveCategory).then((acat) => {
                 if (!acat) {console.log("no category");process.exit(2)}
                 if (acat.isText() || acat.isVoice()) {console.log("not category");process.exit(2)}
                 //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
@@ -636,6 +639,11 @@ client.on("ready",() => {
 })
 
 client.on("messageCreate",(message) => {
+    if (!_config.role) {
+        if (!message.member?.roles.cache.has(_config.role)) {
+            return
+        }
+    }
     if (message.content.startsWith(prefix)) {
         let _args = message.content.slice(prefix.length).split(" ")
         let cmd = _args.splice(0,1)[0].toLowerCase()
@@ -754,4 +762,4 @@ client.on("messageCreate",(message) => {
     }
 })
 
-client.login(process.env.TOKEN)
+client.login(_config.token)
