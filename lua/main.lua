@@ -184,6 +184,7 @@ function ut.util.startsWith(target,str)
 end
 
 function ut.util.getPlayers(str)
+    if (not str) then return {} end
     local players = {}
     for x,v in pairs(Players:GetPlayers()) do
         -- No better alternatives
