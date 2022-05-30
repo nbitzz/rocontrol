@@ -90,6 +90,15 @@ function ut.server:ProcessImage(url)
     },"ProcessedImage")
 end
 
+function ut.server:Get(url)
+    if not self.Session then error("Cannot Get when Session is nil.") end
+    if not url then error("Cannot Get when no URL is passed.") end
+    return ut.YieldGet(self.Session,{
+        type = "HttpGet",
+        url=url
+    },"HttpGet")
+end
+
 -- ut.discord
 
 ut.discord = {

@@ -469,6 +469,14 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             session.Send({type:"ProcessedImage",data:"Failed to get image",key:key})
         })
     },
+    HttpGet:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.url != "string") {return}
+        axios.get(data.url).then((dt) => {
+            session.Send({type:"HttpGet",data:dt.data,key:data.key,error:false})
+        }).catch((err) => {
+            session.Send({type:"HttpGet",error:true})
+        })
+    },
 }
 
 // On connection to Optipost

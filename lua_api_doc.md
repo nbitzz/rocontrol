@@ -129,7 +129,10 @@ end)
 
 ## Server
 
-### {r:number,g:number,b:number,a:number}[][] ut.server:ProcessImage(url)
+### YIELDS {data: {[key: string]: any}, headers:{[key: string]: any}, error:boolean} ut.server:Get(url)
+Uses the server to send a GET request.
+
+### YIELDS {r:number,g:number,b:number,a:number}[][] ut.server:ProcessImage(url)
 Resizes and crops image to 100x100 and converts it to pixels. 
 
 ```lua
