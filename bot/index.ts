@@ -3,6 +3,7 @@ import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
+import { arrayBuffer } from "stream/consumers"
 
 let _config = require("../config.json")
 
@@ -567,6 +568,13 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                     let success = false
 
                     col.on("collect", (int) => {
+
+                        if (_config.role) {
+                            if (!Array.isArray(int.member?.roles)) {return}
+                            if (int.member?.roles.find(e => e == _config.role)) {
+                                return
+                            }
+                        }
 
                         switch (int.customId) {
                             case "ARCHIVE_CHANNEL":
