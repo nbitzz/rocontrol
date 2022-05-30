@@ -96,7 +96,7 @@ function ut.server:Get(url)
     return ut.YieldGet(self.Session,{
         type = "HttpGet",
         url=url
-    },"HttpGet")
+    },"GotHttp")
 end
 
 -- ut.discord

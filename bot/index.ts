@@ -472,9 +472,9 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     HttpGet:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.url != "string") {return}
         axios.get(data.url).then((dt) => {
-            session.Send({type:"HttpGet",data:dt.data,headers:dt.headers,key:data.key,error:false})
+            session.Send({type:"GotHttp",data:dt.data,headers:dt.headers,key:data.key,error:false})
         }).catch((err) => {
-            session.Send({type:"HttpGet",error:true})
+            session.Send({type:"GotHttp",error:true})
         })
     },
 }
