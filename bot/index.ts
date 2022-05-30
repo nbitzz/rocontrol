@@ -385,7 +385,9 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         
         addLog(data.data,true)
 
-        channels.Dynamic[session.id].send(data.data)
+        if (data.data.length <= 2000) {
+            channels.Dynamic[session.id].send(data.data)
+        }
     },
     ViaWebhook:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!data.data) {return}
