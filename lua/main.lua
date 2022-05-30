@@ -30,7 +30,7 @@ function ut.YieldGet(session,data,callbackName)
     if not session then error("Cannot RF when Session is nil.") end
     local d
     local got
-    local key = tostring(math.random())
+    local key = data.key or tostring(math.random())
     local a = session.onmessage:Connect(function(s)
         if s.type == callbackName and s.key == key then
             d = s.data
@@ -272,8 +272,6 @@ function ut.init(session)
             v.Session = session
         end
     end
-    x.discord._Chatted = Instance.new("BindableEvent")
-    x.discord.Chatted = x.discord._Chatted.Event
     x.Session = session
     return x
 end

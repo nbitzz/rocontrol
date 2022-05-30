@@ -527,9 +527,8 @@ OptipostServer.connection.then((Session:OptipostSession) => {
         let Endp:string[] = _config["api-disable"] || []
         if (typeof data.type != "string") {return}
         try {
-            if (!Endp.find(e => e == data.type)) {
-                OptipostActions[data.type](Session,data,addLog)
-            }
+            if (Endp.find(e => e == data.type)) {return}
+            OptipostActions[data.type](Session,data,addLog)
         } catch(e) {
             console.log(e)
         }
