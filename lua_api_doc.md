@@ -142,17 +142,22 @@ testPart.Position = Vector3.new(0,50,0)
 for xPos,column in pairs(cat) do
     local csK = {}
     for yPos,color in pairs(column) do
-        table.insert(csK,ColorSequenceKeypoint.new(yPos*0.01,Color3.fromRGB(color.r,color.g,color.b)))
+        table.insert(csK,ColorSequenceKeypoint.new((((yPos-1)%20)*0.05)/0.95,Color3.fromRGB(color.r,color.g,color.b)))
     end
-    local f = Instance.new("Frame",pSG)
-    f.Position = UDim2.new(xPos*0.01,0,0,0)
-    f.Size = UDim2.new(0.01,0,1,0)
-    f.BorderSizePixel = 0
-    f.BackgroundColor3 = Color3.new(1,1,1)
-    local g = Instance.new("UIGradient",f)
-    g.Rotation = 90
-    g.Color = ColorSequence.new(csK)
-    g.Parent = f
+    for i = 0, 4 do
+        local realCSK = {}
+        local l = (20*i)+1
+        table.move(csK,l,20*(i+1),1,realCSK)
+        local f = Instance.new("Frame",pSG)
+        f.Position = UDim2.new((xPos-1)*0.01,0,i*0.2,0)
+        f.Size = UDim2.new(0.01,0,0.2,0)
+        f.BorderSizePixel = 0
+        f.BackgroundColor3 = Color3.new(1,1,1)
+        local g = Instance.new("UIGradient",f)
+        g.Rotation = 90
+        g.Color = ColorSequence.new(realCSK)
+        g.Parent = f
+    end
 end
 testPart.Parent = workspace
 ```
