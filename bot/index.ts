@@ -639,7 +639,7 @@ client.on("ready",() => {
 })
 
 client.on("messageCreate",(message) => {
-    if (!_config.role) {
+    if (_config.role) {
         if (!message.member?.roles.cache.has(_config.role)) {
             return
         }
