@@ -24,7 +24,7 @@ Your config.json file should look like this:
 	"api-disable":[ // Add this field to block certain API endpoints from being run on the server
 		"RunEval"
 	] 
-	// Adding RunEval this to api-disable will prevent ut.server:Eva() from being run. This is recommended. If you don't add this to api-disable, anyone who connects to your RoControl host server can run custom code.
+	// Adding RunEval to api-disable will prevent ut.server:Eval() from being run. This is recommended. If you don't add this to api-disable, anyone who connects to your RoControl host server can run custom code.
 }
 ```
 
