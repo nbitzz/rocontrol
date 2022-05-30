@@ -133,7 +133,7 @@ end)
 Resizes and crops image to 100x100 and converts it to pixels. 
 
 ```lua
-local cat = ut.server:ProcessImage("https://loremflickr.com/cache/resized/65535_51914473002_70ae3d8ae0_q_100_100_nofilter.jpg")
+local cat = ut.server:ProcessImage("https://media.discordapp.net/attachments/957424000995323996/980628867331031190/3.png?width=472&height=447")
 local testPart = Instance.new("Part")
 local pSG = Instance.new("SurfaceGui",testPart)
 testPart.Size = Vector3.new(3,3,1)
