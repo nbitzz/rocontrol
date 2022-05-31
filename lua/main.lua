@@ -203,7 +203,11 @@ end
 -- ut.util
 
 ut.util = {
-    Session = nil
+    Session = nil,
+    specialGetPlayerOptions = {
+        all = function() return game:GetService("Players"):GetPlayers() end,
+        random = function() local p = game:GetService("Players"):GetPlayers() return p[math.random(1,#p)] end
+    }
 }
 
 function ut.util.startsWith(target,str)
@@ -212,6 +216,11 @@ end
 
 function ut.util.getPlayers(str)
     if (not str) then return {} end
+    for x,v in pairs(ut.util.specialGetPlayerOptions) do
+        if (str == v) then
+            return v()
+        end
+    end
     local players = {}
     for x,v in pairs(Players:GetPlayers()) do
         -- No better alternatives
