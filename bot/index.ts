@@ -569,13 +569,6 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 
                     col.on("collect", (int) => {
 
-                        if (_config.role) {
-                            if (!Array.isArray(int.member?.roles)) {return}
-                            if (int.member?.roles.find(e => e == _config.role)) {
-                                return
-                            }
-                        }
-
                         switch (int.customId) {
                             case "ARCHIVE_CHANNEL":
                             int.deferUpdate()
