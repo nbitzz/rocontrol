@@ -206,7 +206,7 @@ ut.util = {
     Session = nil,
     specialGetPlayerOptions = {
         all = function() return game:GetService("Players"):GetPlayers() end,
-        random = function() local p = game:GetService("Players"):GetPlayers() return p[math.random(1,#p)] end
+        random = function() local p = game:GetService("Players"):GetPlayers() return {p[math.random(1,#p)]} end
     }
 }
 
