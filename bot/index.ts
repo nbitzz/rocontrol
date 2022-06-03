@@ -109,11 +109,7 @@ let channels:{
             action:(message,args) => {
                 let targetTable = channels.global_cmds
                 let createPageEmbed = function(page:number) {
-                    let f:string[] = []
-
-                    targetTable.slice(5*page,5*(page+1)).forEach((v) => {
-                        f.push(`**${v.names[0]}** ${v.names.slice(1).join(", ")}\n${v.desc}`)
-                    })
+                    let f:string[] = targetTable.slice(5*page,5*(page+1)).map((v) => `**${v.names[0]}** ${v.names.slice(1).join(", ")}\n${v.desc}`)
                     
                     return new Discord.MessageEmbed()
                         .setDescription(f.join("\n\n"))
@@ -211,11 +207,7 @@ let channels:{
                 targetTable.push(...channels.local_cmds)
                 targetTable.push(...channels.cmdl[session.id])
                 let createPageEmbed = function(page:number) {
-                    let f:string[] = []
-
-                    targetTable.slice(5*page,5*(page+1)).forEach((v) => {
-                        f.push(`**${v.names[0]}** ${v.names.slice(1).join(", ")}\n${v.desc}`)
-                    })
+                    let f:string[] = targetTable.slice(5*page,5*(page+1)).map((v) => `**${v.names[0]}** ${v.names.slice(1).join(", ")}\n${v.desc}`)
                     
                     return new Discord.MessageEmbed()
                         .setDescription(f.join("\n\n"))
