@@ -143,6 +143,33 @@ Runs eval() on the RoControl server. **It is recommended to either disable this 
 
 ### YIELDS string ut.server:Glot(name,data)
 Creates a snippet on glot.io. Returns the snippet URL.
+```lua
+ut.commands:addCommand("mod.getOutput",{"getoutput","output","o"},"Post output logs to glot.io",0,function() 
+    local logs = game:GetService("LogService"):GetLogHistory()
+    local mappedLogs = {}
+    table.foreach(logs,function(log) 
+        local messagetypes = {
+            [Enum.MessageType.MessageInfo] = "INFO",
+            [Enum.MessageType.MessageOutput] = "PRNT"
+            [Enum.MessageType.MessageError] = "ERR!"
+            [Enum.MessageType.MessageWarning] = "WARN"
+        }
+        table.insert(
+            mappedLogs,
+            string.format(
+                "%s %s   %s",
+                messagetypes[log.messageType],
+                os.date("%X",log.timestamp),
+                log.message
+            )
+        )
+    end)
+
+    local url = ut.server:Glot("Roblox Output - RoControl",table.concat(mappedLogs,"\n"))
+
+    ut.discord:Say("Output dumped at "..url)
+end)
+```
 
 ### YIELDS string[] ut.server:GetFeatures(all)
 Returns array of all available features. If `all` is true, disabled features will be included.
