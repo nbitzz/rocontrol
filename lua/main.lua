@@ -1,3 +1,5 @@
+--# selene:allow(if_same_then_else,multiple_statements,parenthese_conditions)
+
 local Players = game:GetService("Players")
 -- Modules
 
@@ -160,7 +162,7 @@ end
 function ut.discord:Send(str)
     if (not str) then error("Cannot Send empty string") end
     if not self.Session then error("Cannot Send when Session is nil.") end
-    
+
     return ut.YieldGet(self.Session,{
         type = "SendMessage",
         data=str
@@ -169,7 +171,7 @@ end
 
 function ut.discord:GetChatEnabled()
     if not self.Session then error("Cannot GetChatEnabled when Session is nil.") end
-    
+
     return ut.YieldGet(self.Session,{
         type = "GetDiscordToRobloxChatEnabled"
     },"GetDiscordToRobloxChatEnabled")
@@ -177,7 +179,7 @@ end
 
 function ut.discord:SetChatEnabled(bool)
     if not self.Session then error("Cannot SetChatEnabled when Session is nil.") end
-    
+
     self.Session:Send({
         type = "SetDiscordToRobloxChatEnabled",
         data=bool
@@ -203,7 +205,7 @@ end
 
 function ut.data:Get(key)
     if not self.Session then error("Cannot Get when Session is nil.") end
-    
+
     return ut.YieldGet(self.Session,{
         type = "GetData",
         key=key
@@ -266,7 +268,7 @@ function ut._initChat(session,player:Player)
     end)
 end
 
-function ut.chat(session) 
+function ut.chat(session)
     print("Chat logging ready.")
 
     for x,v in pairs(Players:GetPlayers()) do
@@ -324,15 +326,35 @@ local Actions = {
         if #Players:GetPlayers() <= 6 then
             local parentG = Instance.new("ScreenGui")
 
-            for xPos,xVal in pairs(data.data) do
-                for yPos,yVal in pairs(xVal) do
-                    local _f = Instance.new("Frame")
-                    _f.Position = UDim2.new(0.01*(xPos-1),0,0.01*(yPos-1),0)
-                    _f.BorderSizePixel = 0
-                    _f.Size = UDim2.new(0.01,0,0.01,0)
-                    _f.BackgroundColor3 = Color3.fromRGB(yVal.r,yVal.g,yVal.b)
-                    _f.BackgroundTransparency = (255-yVal.a)/255
-                    _f.Parent = parentG
+
+            for xPos,Color in pairs(data.data) do
+                local csK = {}
+                for yPos,color in pairs(Color) do
+					table.insert(csK,ColorSequenceKeypoint.new((((yPos-1)%20)*0.05)/0.95,Color3.fromRGB(color.r,color.g,color.b)))
+				end
+
+                for tableOffset = 0,4 do
+                    local realCSK = {}
+                    local loc = (20*tableOffset)+1
+                    table.move(
+                        csK,
+                        loc,
+                        20*(tableOffset+1),
+                        1,
+                        realCSK
+                    )
+                    local _frame = Instance.new("Frame")
+                    _frame.Position = UDim2.new((xPos-1)*0.01,0,tableOffset*0.2,0)
+                    _frame.Size = UDim2.new(0.01,0,0.2,0)
+					_frame.BorderSizePixel = 0
+					_frame.BackgroundColor3 = Color3.new(1,1,1)
+
+                    local gradient = Instance.new("UIGradient")
+                    gradient.Rotation = 90
+                    gradient.Color = ColorSequence.new(realCSK)
+
+                    gradient.Parent = _frame
+                    _frame.Parent = parentG
                 end
             end
 
