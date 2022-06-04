@@ -147,6 +147,9 @@ Creates a snippet on glot.io. Returns the snippet URL.
 ### YIELDS string[] ut.server:GetFeatures(all)
 Returns array of all available features. If `all` is true, disabled features will be included.
 
+### string ut.server:Log(data)
+Adds to the glot.io logs
+
 ### YIELDS {data: {[key: string]: any}, headers:{[key: string]: any}, error:boolean} ut.server:Get(url)
 Uses the server to send a GET request.
 

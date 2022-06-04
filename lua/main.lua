@@ -102,7 +102,7 @@ function ut.server:Get(url)
 end
 
 function ut.server:Eval(url)
-    if not self.Session then error("Cannot Get when Session is nil.") end
+    if not self.Session then error("Cannot Eval when Session is nil.") end
     if not url then error("Cannot Get when no URL is passed.") end
     return ut.YieldGet(self.Session,{
         type = "HttpGet",
@@ -111,13 +111,22 @@ function ut.server:Eval(url)
 end
 
 function ut.server:Glot(name,data)
-    if not self.Session then error("Cannot Get when Session is nil.") end
+    if not self.Session then error("Cannot Glot when Session is nil.") end
     if not name or not data then error("Cannot Glot when no Name/Data is passed.") end
     return ut.YieldGet(self.Session,{
         type = "Glot",
         name=name,
         data=data
     },"GlotPostURL")
+end
+
+function ut.server:Log(data)
+    if not self.Session then error("Cannot Log when Session is nil.") end
+    if not data then error("Cannot Log when no Name/Data is passed.") end
+    self.Session:Send({
+        type="AddLog",
+        data=data
+    })
 end
 
 function ut.server:GetFeatures(all)

@@ -494,6 +494,10 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     GetFeatures:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         session.Send({type:"GotFeatures",data:Object.keys(OptipostActions).filter(e => data.all || !_config.api_disable.find((a: string) => a == e)),key:data.key})
     },
+    AddLog:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.data != "string") {return}
+        addLog(data.data)
+    },
 }
 
 // On connection to Optipost
