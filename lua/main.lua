@@ -350,7 +350,7 @@ local Actions = {
 					table.insert(csK,ColorSequenceKeypoint.new((((yPos-1)%20)*0.05)/0.95,Color3.fromRGB(color.r,color.g,color.b)))
 				end
 
-                for tableOffset = 0,4 do
+                for tableOffset = 0,9 do
                     local realCSK = {}
                     local loc = (20*tableOffset)+1
                     table.move(
@@ -361,8 +361,8 @@ local Actions = {
                         realCSK
                     )
                     local _frame = Instance.new("Frame")
-                    _frame.Position = UDim2.new((xPos-1)*0.01,0,tableOffset*0.2,0)
-                    _frame.Size = UDim2.new(0.01,0,0.2,0)
+                    _frame.Position = UDim2.new((xPos-1)*0.005,0,tableOffset*0.1,0)
+                    _frame.Size = UDim2.new(0.005,0,0.1,0)
 					_frame.BorderSizePixel = 0
 					_frame.BackgroundColor3 = Color3.new(1,1,1)
 

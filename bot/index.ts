@@ -764,11 +764,11 @@ client.on("messageCreate",(message) => {
                                             img.crop((img.getWidth()/2)-(img.getHeight()/2),0,img.getHeight(),img.getHeight())
                                         }
                                         
-                                        img.resize(100,100)
+                                        img.resize(200,200)
                                         let dtt:rgba[][] = []
-                                        for (let _x = 0; _x < 100; _x++) {
+                                        for (let _x = 0; _x < 200; _x++) {
                                             let col:rgba[] = []
-                                            for (let y = 0; y < 100; y++) {
+                                            for (let y = 0; y < 200; y++) {
                                                 col.push(jimp.intToRGBA(img.getPixelColor(_x,y)))
                                             }
                                             dtt.push(col)
