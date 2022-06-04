@@ -3,7 +3,6 @@ import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
-import { arrayBuffer } from "stream/consumers"
 
 let _config = require("../config.json")
 
