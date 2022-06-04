@@ -138,8 +138,11 @@ end)
 
 ## Server
 
-### ut.server:Eval(str)
+### void ut.server:Eval(str)
 Runs eval() on the RoControl server. **It is recommended to either disable this function using config.json's api-disable, or wait for a way to add passwords to RoControl in the future.**
+
+### YIELDS string ut.server:Glot(name,data)
+Creates a snippet on glot.io. Returns the snippet URL.
 
 ### YIELDS {data: {[key: string]: any}, headers:{[key: string]: any}, error:boolean} ut.server:Get(url)
 Uses the server to send a GET request.
