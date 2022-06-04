@@ -70,9 +70,10 @@ let clamp = (min:number,max:number,target:number) => Math.min(Math.max(target,mi
 if (!_config.prefix) {process.exit()}
 let prefix:string = _config.prefix
 
-let make_glot_post:(data:string) => Promise<string> = (data:string) => {
+let make_glot_post:(data:string,postName?:string) => Promise<string> = (data:string,postName?:string) => {
+    let TargetPostName:string = postName || `${new Date().toUTCString()} Log Export - RoCtrl`
     return new Promise((resolve,reject) => {
-        axios.post("https://glot.io/api/snippets",{language:"plaintext",title:`${new Date().toUTCString()} Log Export - RoCtrl`,public:true,files:[{name:"export.txt",content:data}]}).then((data) => {
+        axios.post("https://glot.io/api/snippets",{language:"plaintext",title:TargetPostName,public:true,files:[{name:"export.txt",content:data}]}).then((data) => {
             resolve(`https://glot.io/snippets/${data.data.id}`)
         }).catch(() => {
             resolve("https://google.co.ck/search?q=error")
@@ -183,7 +184,7 @@ let channels:{
                                         .setCustomId("ignore.helpRight")
                                         .setDisabled(true),
                                 )
-                        ]})
+                        ]}).catch(() => {})
                     })
                 })
             },
@@ -281,7 +282,7 @@ let channels:{
                                         .setCustomId("ignore.helpRight")
                                         .setDisabled(true),
                                 )
-                        ]})
+                        ]}).catch(() => {})
                     })
                 })
             },
@@ -469,9 +470,9 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     HttpGet:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.url != "string") {return}
         axios.get(data.url).then((dt) => {
-            session.Send({type:"GotHttp",data:dt.data,headers:dt.headers,key:data.key,error:false})
+            session.Send({type:"GotHttp",key:data.key,data:{data:dt.data,headers:dt.headers,error:false}})
         }).catch((err) => {
-            session.Send({type:"GotHttp",key:data.key,error:true})
+            session.Send({type:"GotHttp",key:data.key,data:{error:true}})
         })
     },
     GetDiscordToRobloxChatEnabled:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
@@ -484,6 +485,12 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     RunEval:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.data != "string") {return}
         eval(data.data)
+    },
+    Glot:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.data != "string" || typeof data.name != "string") {return}
+        make_glot_post(data.data,data.name).then((dt) => {
+            session.Send({type:"GlotPostURL",data:dt,key:data.key})
+        })
     },
 }
 

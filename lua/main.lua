@@ -108,6 +108,16 @@ function ut.server:Eval(url)
     },"GotHttp")
 end
 
+function ut.server:Glot(name,data)
+    if not self.Session then error("Cannot Get when Session is nil.") end
+    if not name or not data then error("Cannot Glot when no Name/Data is passed.") end
+    return ut.YieldGet(self.Session,{
+        type = "Glot",
+        name=name,
+        data=data
+    },"GlotPostURL")
+end
+
 -- ut.discord
 
 ut.discord = {
