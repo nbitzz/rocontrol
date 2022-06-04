@@ -150,8 +150,8 @@ ut.commands:addCommand("mod.getOutput",{"getoutput","output","o"},"Post output l
     table.foreach(logs,function(log) 
         local messagetypes = {
             [Enum.MessageType.MessageInfo] = "INFO",
-            [Enum.MessageType.MessageOutput] = "PRNT"
-            [Enum.MessageType.MessageError] = "ERR!"
+            [Enum.MessageType.MessageOutput] = "PRNT",
+            [Enum.MessageType.MessageError] = "ERR!",
             [Enum.MessageType.MessageWarning] = "WARN"
         }
         table.insert(
