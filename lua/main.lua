@@ -120,6 +120,14 @@ function ut.server:Glot(name,data)
     },"GlotPostURL")
 end
 
+function ut.server:GetFeatures(all)
+    if not self.Session then error("Cannot Get when Session is nil.") end
+    return ut.YieldGet(self.Session,{
+        type = "GetFeatures",
+        all=all
+    },"GotFeatures")
+end
+
 -- ut.discord
 
 ut.discord = {
