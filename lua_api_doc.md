@@ -147,7 +147,7 @@ Creates a snippet on glot.io. Returns the snippet URL.
 ut.commands:addCommand("mod.getOutput",{"getoutput","output","o"},"Post output logs to glot.io",0,function() 
     local logs = game:GetService("LogService"):GetLogHistory()
     local mappedLogs = {}
-    table.foreach(logs,function(log) 
+    table.foreach(logs,function(index,log) 
         local messagetypes = {
             [Enum.MessageType.MessageInfo] = "INFO",
             [Enum.MessageType.MessageOutput] = "PRNT",
