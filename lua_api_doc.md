@@ -115,6 +115,26 @@ ut.commands:addCommand("testapp.vanish",{"vanish"},"Disable/enable Discord to Ro
 end)
 ```
 
+### RBXEventSignal<string> ut.discord:OnButtonPressed(messageid,buttonid)
+Returns an event that is fired when a button is pressed
+```lua
+local msg = ut.discord:Send({
+    content = "Click this button to make me say hi!",
+    buttons = {
+        {
+            id = "say_hi",
+            label = "Say hi!",
+            style = "green", -- blurple, green, red, gray/grey, link
+            emoji = "👋"
+        }
+    }
+})
+
+ut.discord:OnButtonPressed(msg,"say_hi"):Connect(function() 
+    ut.discord:Say("Hello world!")
+end)
+```
+
 ## Util
 
 ### boolean ut.util.startsWith(target,str)

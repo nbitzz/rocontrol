@@ -213,7 +213,16 @@ function ut.discord:SetChatEnabled(bool)
     })
 end
 
+function ut.discord:OnButtonPressed(id,btnid)
+    if not self.Session then error("Cannot OnButtonPressed when Session is nil.") end
 
+    local b = Instance.new("BindableEvent")
+
+    self.Session:On({type="ButtonPressed",messageId=id,id=btnid},function(data) 
+        b:Fire(data.userId)        
+    end)
+    return b.Event
+end
 
 -- ut.data
 

@@ -796,7 +796,8 @@ client.on("messageCreate",(message) => {
                             foundSession.Send({
                                 type:"ExecuteCommand",
                                 commandId:lcmd.id,
-                                args:args
+                                args:args || [],
+                                userId:message.author.id
                             })
                         }
                     }
@@ -868,6 +869,26 @@ client.on("messageCreate",(message) => {
                         }).catch(() => {})
                     }
                 }
+            }
+        }
+    }
+})
+
+client.on("interactionCreate",(int) => {
+    if (int.isButton()) {
+        int.deferUpdate()
+        // Need to find a better way to do this
+        for (let [x,v] of Object.entries(channels.Dynamic)) {
+            if (v.id == int?.channel?.id) {
+                let foundSession = OptipostServer._connections.find(e => e.id == x)
+                if (!foundSession) {return}
+
+                foundSession.Send({
+                    type: "ButtonPressed",
+                    id: int.customId,
+                    userId: int.user.id,
+                    messageId: int.message.id
+                })
             }
         }
     }
