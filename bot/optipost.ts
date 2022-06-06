@@ -3,9 +3,7 @@ import bodyparser from "body-parser"
 import { BaseEvent,EventSignal } from "./events"
 import crypto from "crypto"
 
-export interface JSONCompliantArray {
-    [key:number]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null
-}
+export type JSONCompliantArray = Array<string|number|boolean|JSONCompliantArray|JSONCompliantObject>
 
 export interface JSONCompliantObject {
     [key:string]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null

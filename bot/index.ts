@@ -3,6 +3,7 @@ import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
+import e from "express"
 
 let _config = require("../config.json")
 
@@ -78,6 +79,72 @@ let make_glot_post:(data:string,postName?:string) => Promise<string> = (data:str
             resolve("https://google.co.ck/search?q=error")
         })
     })
+}
+
+const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOptions {
+    // THIS CODE SUUUUUUUUUUUUUUCKS
+    // DISCORD'S API MAKES ME WANT TO EXPLODE 
+    // but at least I didn't use ts-ignore in it
+    
+    let T_MSGO:{[key:string]:any} = {}
+
+    if (obj.content) {
+        T_MSGO.content = obj.content
+    }
+
+    if (obj.embeds && Array.isArray(obj.embeds)) {
+        T_MSGO.embeds = []
+
+        obj.embeds.forEach((v:{}) => {
+            T_MSGO.embeds.push(new Discord.MessageEmbed(v))
+        })
+    }
+
+    if (obj.buttons && Array.isArray(obj.buttons)) {
+        T_MSGO.components = []
+
+        let realComponents:Discord.MessageButton[] = []
+        obj.buttons.forEach((v) => {
+            if (typeof v == "object" && !Array.isArray(v)) {
+                let btn = new Discord.MessageButton()
+
+                let buttonColors:{[key:string]:number} = {
+                    "primary":1,"blurple":1,"blue":1,"purple":1,
+                    "secondary":2,"grey":2,"gray":2,
+                    "success":3,"green":3,
+                    "danger":4,"red":4,"error":4,
+                    "url":5,"link":5
+                }
+                
+                if (typeof v.label == "string") {
+                    btn.setLabel(v.label)
+                }
+                if (typeof v.style == "string" && !v.url) {
+                    btn.setStyle(buttonColors[v.style.toLowerCase()])
+                }
+                if (typeof v.url == "string" && !v.id) {
+                    btn.setURL(v.url)
+                    btn.setStyle("LINK")
+                }
+                if (typeof v.id == "string") {
+                    btn.setCustomId(v.id)
+                }
+                if (typeof v.emoji == "string" && !v.url) {
+                    btn.setEmoji(v.emoji)
+                }
+
+                realComponents.push(btn)
+            }
+        })
+
+        for (let i = 0; i < realComponents.length/5; i++) {
+            let actionRow = new Discord.MessageActionRow()
+            actionRow.addComponents(...realComponents.slice(i*5,(i+1)*5))
+            T_MSGO.components.push(actionRow)
+        }
+    }
+
+    return T_MSGO
 }
 
 let channels:{
@@ -298,6 +365,8 @@ let channels:{
     ]
 }
 
+
+
 // Set up server (http://127.0.0.1:3000/rocontrol)
 let OptipostServer = new Optipost(3000,"rocontrol")
 
@@ -366,7 +435,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
 
         channels.cmdl[session.id].push(
             {
-                names:data.names,
+                names:data.names.filter((e):e is string => typeof e == "string"),
                 id:data.id,
                 args:data.args_amt,
                 desc:data.desc
@@ -376,24 +445,29 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         session.OldSend({type:"ok"})
     },
     Say:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
-        if (!data.data || typeof data.data != "string") {return}
+        if (typeof data.data == "string") {channels.Dynamic[session.id].send(data.data)}
+        if (!data.data || typeof data.data != "object") {return}
+        if (Array.isArray(data.data)) {return}
         
-        addLog(data.data,true)
-
-        if (data.data.length <= 2000) {
-            channels.Dynamic[session.id].send(data.data).catch(() => {})
+        if (data.data.content && typeof data.data.content == "string") {
+            addLog(data.data.content,true)
         }
+
+        channels.Dynamic[session.id].send(ProcessMessageData(data.data)).catch(() => {})
     },
     ViaWebhook:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!data.data) {return}
         axios.post(channels.chnl_webhooks[session.id].url,data.data).catch(() => {})
     },
     SendMessage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
-        if (!data.data || typeof data.data != "string") {return}
-        
-        addLog(data.data,true)
+        if (!data.data || typeof data.data != "object") {return}
+        if (Array.isArray(data.data)) {return}
 
-        channels.Dynamic[session.id].send(data.data).then((msg) => {
+        if (data.data.content && typeof data.data.content == "string") {
+            addLog(data.data.content,true)
+        }
+
+        channels.Dynamic[session.id].send(ProcessMessageData(data.data)).then((msg) => {
             session.Send({
                 type:"MessageSent",
                 data:msg.id,
@@ -416,8 +490,9 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         addLog(`Session edited message: ${data.id}`)
 
         channels.Dynamic[session.id].messages.fetch(data.id).then((msg) => {
-            if (typeof data.data != "string") {return} // ts stupidness
-            msg.edit(data.data)
+            if (!data.data || typeof data.data != "object") {return}
+            if (Array.isArray(data.data)) {return}
+            channels.Dynamic[session.id].send(ProcessMessageData(data.data)).catch(() => {})
         }).catch(() => {})
     },
     GetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
@@ -438,7 +513,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         let key = data.key
 
         axios.get(url).then((data) => {
-            if (data.headers["content-type"].startsWith("image/")) {
+            if (data.headers["content-type"].startsWith("image/") && data.headers["content-type"] != "image/webp") {
                 jimp.read(url).then(img => {
                     if (img.getHeight() > img.getWidth()) {
                         img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
@@ -456,8 +531,17 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                         dtt.push(col)
                     }
 
-                    //@ts-ignore | Find way to not use ts-ignore
-                    session.Send({type:"ProcessedImage",data:dtt,key:key})
+
+                    // Still a mess but at least I got rid of the ts-ignore call lol
+                    // TODO: Still, find a better way to do this.
+                    session.Send({type:"ProcessedImage",data:dtt.map(e => e.map(a => {
+                        return {
+                            r:a.r,
+                            g:a.g,
+                            b:a.b,
+                            a:a.a
+                        }
+                    })),key:key})
                 }).catch((e) => {})
             } else {
                 session.Send({type:"ProcessedImage",data:"Invalid image",key:key})
@@ -638,9 +722,11 @@ client.on("ready",() => {
             if (!cat) {console.log("no category");process.exit(2)}
             if (cat.isText() || cat.isVoice()) {console.log("not category");process.exit(2)}
             if (!_config.archiveCategory) {console.log("no process.env.ARCHIVE_CATEGORY");process.exit(2)}
-            guild.channels.fetch(_config.archiveCategory).then((acat) => {
+
+            guild.channels.fetch(_config.archiveCategory).then((acat)=> {
                 if (!acat) {console.log("no category");process.exit(2)}
                 if (acat.isText() || acat.isVoice()) {console.log("not category");process.exit(2)}
+                
                 //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
                 channels.Static.category = cat
                 //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!

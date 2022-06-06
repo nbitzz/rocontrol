@@ -1,5 +1,6 @@
 --# selene:allow(if_same_then_else,multiple_statements,parenthese_conditions)
 
+local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 -- Modules
 
@@ -153,9 +154,13 @@ end
 
 function ut.discord:Edit(id,str)
     if not self.Session then error("Cannot Edit when Session is nil.") end
+    local realData = str
+    if (typeof(str) == "string") then
+        realData = {content=str}
+    end
     self.Session:Send({
         type = "EditMessage",
-        data= str,
+        data= realData,
         id=id
     })
 end
@@ -180,9 +185,14 @@ function ut.discord:Send(str)
     if (not str) then error("Cannot Send empty string") end
     if not self.Session then error("Cannot Send when Session is nil.") end
 
+    local realData = str
+    if (typeof(str) == "string") then
+        realData = {content=str}
+    end
+
     return ut.YieldGet(self.Session,{
         type = "SendMessage",
-        data=str
+        data=realData
     },"MessageSent")
 end
 
@@ -340,68 +350,61 @@ local Actions = {
         },NameColor=Color3.new(1,0,0)})
     end,
     Image = function(session,data)
-        if #Players:GetPlayers() <= 6 then
-            local parentG = Instance.new("ScreenGui")
+        local parentG = Instance.new("ScreenGui")
 
 
-            for xPos,Color in pairs(data.data) do
-                local csK = {}
-                for yPos,color in pairs(Color) do
-					table.insert(csK,ColorSequenceKeypoint.new((((yPos-1)%20)*0.05)/0.95,Color3.fromRGB(color.r,color.g,color.b)))
-				end
-
-                for tableOffset = 0,9 do
-                    local realCSK = {}
-                    local loc = (20*tableOffset)+1
-                    table.move(
-                        csK,
-                        loc,
-                        20*(tableOffset+1),
-                        1,
-                        realCSK
-                    )
-                    local _frame = Instance.new("Frame")
-                    _frame.Position = UDim2.new((xPos-1)*0.005,0,tableOffset*0.1,0)
-                    _frame.Size = UDim2.new(0.005,0,0.1,0)
-					_frame.BorderSizePixel = 0
-					_frame.BackgroundColor3 = Color3.new(1,1,1)
-
-                    local gradient = Instance.new("UIGradient")
-                    gradient.Rotation = 90
-                    gradient.Color = ColorSequence.new(realCSK)
-
-                    gradient.Parent = _frame
-                    _frame.Parent = parentG
-                end
+        for xPos,Color in pairs(data.data) do
+            local csK = {}
+            for yPos,color in pairs(Color) do
+                table.insert(csK,ColorSequenceKeypoint.new((((yPos-1)%20)*0.05)/0.95,Color3.fromRGB(color.r,color.g,color.b)))
             end
 
-            local toCleanup = {
-                parentG
-            }
+            for tableOffset = 0,9 do
+                local realCSK = {}
+                local loc = (20*tableOffset)+1
+                table.move(
+                    csK,
+                    loc,
+                    20*(tableOffset+1),
+                    1,
+                    realCSK
+                )
+                local _frame = Instance.new("Frame")
+                _frame.Position = UDim2.new((xPos-1)*0.005,0,tableOffset*0.1,0)
+                _frame.Size = UDim2.new(0.005,0,0.1,0)
+                _frame.BorderSizePixel = 0
+                _frame.BackgroundColor3 = Color3.new(1,1,1)
 
-            for x,v in pairs(Players:GetPlayers()) do
-                local _g = parentG:Clone()
-                _g.Parent = v.PlayerGui
-                table.insert(toCleanup,_g)
+                local gradient = Instance.new("UIGradient")
+                gradient.Rotation = 90
+                gradient.Color = ColorSequence.new(realCSK)
+
+                gradient.Parent = _frame
+                _frame.Parent = parentG
             end
+        end
 
-            session:Send({
-                type = "Say",
-                data="Image sent."
-            })
+        local toCleanup = {
+            parentG
+        }
 
-            task.wait(5)
+        for x,v in pairs(Players:GetPlayers()) do
+            local _g = parentG:Clone()
+            _g.Parent = v.PlayerGui
+            table.insert(toCleanup,_g)
+        end
 
-            for x,v in pairs(toCleanup) do
-                if v then
-                    v:Destroy()
-                end
+        session:Send({
+            type = "Say",
+            data="Image sent."
+        })
+
+        task.wait(5)
+
+        for x,v in pairs(toCleanup) do
+            if v then
+                v:Destroy()
             end
-        else
-            session:Send({
-                type = "Say",
-                data="Too many players! Since we don't want to crash the server, I have not sent the image to screens."
-            })
         end
     end,
     ExecuteCommand = function(session,data)

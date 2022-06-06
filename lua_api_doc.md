@@ -62,21 +62,21 @@ Returns data
 
 ## Discord
 
-### void ut.discord:Say(str)
+### void ut.discord:Say(data)
 
 Sends a message in the connected Discord channel
 ```lua
 ut.discord:Say("Hello world!")
 ```
 
-### YIELDS string ut.discord:Send(str)
+### YIELDS string ut.discord:Send(data)
 
 Sends a message in the connected Discord channel. Returns the ID.
 ```lua
 ut.discord:Send("Hello world!")
 ```
 
-### void ut.discord:Edit(id,str)
+### void ut.discord:Edit(id,data)
 
 Edits a message in the connected Discord channel
 ```lua
