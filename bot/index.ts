@@ -492,7 +492,9 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         channels.Dynamic[session.id].messages.fetch(data.id).then((msg) => {
             if (!data.data || typeof data.data != "object") {return}
             if (Array.isArray(data.data)) {return}
-            channels.Dynamic[session.id].send(ProcessMessageData(data.data)).catch(() => {})
+            let x = ProcessMessageData(data.data)
+            // ts fix
+            msg.edit({components:x.components,content:x.content,embeds:x.embeds}).catch(() => {})
         }).catch(() => {})
     },
     GetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
