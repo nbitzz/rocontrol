@@ -1,4 +1,7 @@
-# RoControl
+<h1 align="center">
+<img src="https://github.com/nbitzz/rocontrol/blob/dev/assets/rocontrol-app-icon.png" width="200" height="200"><br>
+RoControl</h1>
+
 A simple Discord bot that connects to a Roblox game.
 
 Requires discord.js v13, express, jimp, axios, and body-parser. HTTP must be enabled.
