@@ -1,38 +1,31 @@
-# Lua API docs
+<h1 align="center">
+<img src="https://github.com/nbitzz/rocontrol/blob/dev/assets/rocontrol-lua.png" width="200" height="200"><br>Lua API docs</h1>
 
 Set of APIs used to add commands to RoControl
 
 ## Table of Contents
 
-[ut](#ut)
-
-[Commands](#commands)
-
-[Discord](#discord)
-
-[Util](#util)
-
-[Server](#server)
-
-[Session](#session)
+[ut](#ut)<br>
+[Commands](#commands)<br>
+[Discord](#discord)<br>
+[Util](#util)<br>
+[Server](#server)<br>
+[Session](#session)<br>
 
 ## ut
 
 ### ut.chat(session)
 
-Do not use (this is only used internally)
-
+Do not use (this is only used internally)<br>
 Sets up Roblox to Discord chat
 
 ### ut._initChat(session)
 
-Do not use (this is only used internally)
-
+Do not use (this is only used internally)<br>
 Used by ut.chat (listener)
 
 ### ut.init(session)
-Do not use (this is only used internally)
-
+Do not use (this is only used internally)<br>
 Creates a new ut api for the session
 
 ## Commands
@@ -115,7 +108,7 @@ ut.commands:addCommand("testapp.vanish",{"vanish"},"Disable/enable Discord to Ro
 end)
 ```
 
-### RBXEventSignal<string> ut.discord:OnButtonPressed(messageid,buttonid)
+### RBXEventSignal&lt;string&gt; ut.discord:OnButtonPressed(messageid,buttonid)
 Returns an event that is fired when a button is pressed
 ```lua
 local msg = ut.discord:Send({
