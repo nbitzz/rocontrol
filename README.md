@@ -3,14 +3,15 @@
 RoControl<br>
 <img src="https://img.shields.io/github/license/nbitzz/rocontrol"></img>
 <img src="https://img.shields.io/github/package-json/v/nbitzz/rocontrol/dev"></img>
-<img src="https://img.shields.io/github/package-json/v/nbitzz/rocontrol/main"></img>
+<img src="https://img.shields.io/github/package-json/v/nbitzz/rocontrol/main"></img><br>
+[`main`](https://github.com/nbitzz/rocontrol/tree/main) [`dev`](https://github.com/nbitzz/rocontrol/tree/dev)
 </h1>
 
 A simple Discord bot that connects to a Roblox game.
 
 Requires discord.js v13, express, jimp, axios, and body-parser. HTTP must be enabled.
 
-[`main`](https://github.com/nbitzz/rocontrol/tree/main) [`dev`](https://github.com/nbitzz/rocontrol/tree/dev)
+
 
 **RoControl is not designed for usage in script builders.** If you see RoControl running in a script builder, it is most likely with a custom loader and package.
 

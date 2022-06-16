@@ -103,7 +103,7 @@ const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOpti
     if (obj.buttons && Array.isArray(obj.buttons)) {
         T_MSGO.components = []
 
-        let realComponents:Discord.MessageButton[] = []
+        let realComponents:(Discord.MessageButton|string)[] = []
         obj.buttons.forEach((v) => {
             if (typeof v == "object" && !Array.isArray(v)) {
                 let btn = new Discord.MessageButton()
@@ -134,14 +134,35 @@ const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOpti
                 }
 
                 realComponents.push(btn)
+            } else if (v == "\n") {
+                realComponents.push("Linebreak")
             }
         })
 
+        /*
         for (let i = 0; i < realComponents.length/5; i++) {
             let actionRow = new Discord.MessageActionRow()
             actionRow.addComponents(...realComponents.slice(i*5,(i+1)*5))
             T_MSGO.components.push(actionRow)
-        }
+        }*/
+
+        let ln = 0 
+
+        realComponents.forEach((v,x) => {
+            if (!T_MSGO.components[ln]) {
+                T_MSGO.components.push(new Discord.MessageActionRow())
+            }
+
+            let ar = T_MSGO.components[ln]
+            if (v == "Linebreak") {
+                ln++
+            } else if (typeof v == "object") {
+                ar.addComponents(v)
+                if (ar.components.length == 5) {
+                    ln++
+                }
+            }
+        })
     }
 
     return T_MSGO
