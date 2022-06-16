@@ -4,8 +4,10 @@ RoControl<br>
 <img src="https://img.shields.io/github/license/nbitzz/rocontrol"></img>
 <img src="https://img.shields.io/github/package-json/v/nbitzz/rocontrol/dev"></img>
 <img src="https://img.shields.io/github/package-json/v/nbitzz/rocontrol/main"></img><br>
-[`main`](https://github.com/nbitzz/rocontrol/tree/main) [`dev`](https://github.com/nbitzz/rocontrol/tree/dev)
 </h1>
+
+<p align="center"><a href="https://github.com/nbitzz/rocontrol/tree/main"><code>main</code></a> <a href="https://github.com/nbitzz/rocontrol/tree/dev"><code>dev</code></a>
+</p>
 
 A simple Discord bot that connects to a Roblox game.
 
