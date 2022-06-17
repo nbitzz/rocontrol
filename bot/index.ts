@@ -416,6 +416,8 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             ]})
         }
 
+        // THIS CODE SUCKS SCREW YOU ROBLOX APIS
+        
         if (_flags.RobustConnectionDialogue) {
             axios.get(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${data.gameid}`).then((datax) => {
                 ConnectionDialogueEmbed.setTitle(datax.data.data[0].name)
