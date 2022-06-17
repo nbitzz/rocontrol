@@ -5,6 +5,7 @@ import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } fr
 import fs from "fs"
 
 let _config = require("../config.json")
+let _flags = require("../flags.json")
 
 let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => JSONCompliantObject} = {
     data:{},
@@ -404,12 +405,38 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
 
         channels.Dynamic[session.id].setName(data.data || "studio-game-"+session.id)
 
-        channels.Dynamic[session.id].send({embeds: [
-            new Discord.MessageEmbed()
-                .setTitle("Connected")
-                .setDescription(`Optipost Session ${session.id}\n\nJobId ${data.data}\nGameId ${data.gameid}`)
-                .setColor("BLURPLE")
-        ]})
+        let ConnectionDialogueEmbed = new Discord.MessageEmbed()
+        .setTitle("Connected")
+        .setDescription(`Optipost Session ${session.id}\n\nJobId ${data.data}\nGameId ${data.gameid}`)
+        .setColor("BLURPLE")
+
+        let sendDialogue = () => {
+            channels.Dynamic[session.id].send({embeds: [
+                ConnectionDialogueEmbed
+            ]})
+        }
+
+        if (_flags.RobustConnectionDialogue) {
+            axios.get(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${data.gameid}`).then((datax) => {
+                ConnectionDialogueEmbed.setTitle(datax.data.data[0].name)
+                ConnectionDialogueEmbed.setURL(datax.data.data[0].url)
+                ConnectionDialogueEmbed.setDescription(datax.data.data[0].description.slice(0,100))
+                ConnectionDialogueEmbed.setAuthor(datax.data.data[0].builder)
+                axios.get(`https://thumbnails.roblox.com/v1/assets?assetIds=${data.gameid}&size=384x216&format=Png&isCircular=false`).then((dataxx) => {
+                    if (dataxx.data.data) {
+                        ConnectionDialogueEmbed.setThumbnail(dataxx.data.data[0].imageUrl)
+                    }
+                    sendDialogue()
+                }).catch(() => {
+                    sendDialogue()
+                })
+            }).catch(() => {
+                sendDialogue()
+            })
+        } else {
+            sendDialogue()
+        }
+        
 
         session.OldSend({type:"ok"})
     },
