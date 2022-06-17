@@ -657,7 +657,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                         new Discord.MessageEmbed()
                             .setTitle(`[${Date.now()}] ${new Date().toUTCString()}`)
                             .setURL(url)
-                            .setDescription(logs.join("\n").slice(150)+"...")
+                            .setDescription(logs.join("\n").slice(0,50)+"...")
                     ]   
                 })
             }
@@ -753,7 +753,7 @@ client.on("ready",() => {
         if (!_config.serverCategory) {console.log("no serverCategory");process.exit(2)}
         
         if (_config.log_channel) {
-            guild.channels.fetch(_config.serverCategory).then((txt) => {
+            guild.channels.fetch(_config.log_channel).then((txt) => {
                 if (txt?.isText()) {
                     channels.Static.logchannel = txt
                 }
