@@ -3,7 +3,6 @@ import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
-import e from "express"
 
 let _config = require("../config.json")
 
@@ -169,7 +168,7 @@ const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOpti
 }
 
 let channels:{
-    Static:{targetGuild:Discord.Guild|null,category:Discord.CategoryChannel|null,archive:Discord.CategoryChannel|null},
+    Static:{targetGuild:Discord.Guild|null,category:Discord.CategoryChannel|null,archive:Discord.CategoryChannel|null,logchannel?:Discord.TextBasedChannel},
     Dynamic:{[key:string]:Discord.TextChannel},
     chnl_webhooks:{[key:string]:Discord.Webhook},
     imgcache:{[key:string]:string},
@@ -622,6 +621,8 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     }
 
     // This code sucks and is confusing. TODO: FIX.
+    // Update 6/17/2022: I just remembered this comment.
+    // Can someone clean it up?
     let addLog = (str:string,addTs?:boolean) => { let dt = new Date(); logs.push(`${!addTs ? dt.toLocaleTimeString('en-GB', { timeZone: 'UTC' }) : ""} ${!addTs ? "|" : ""} ${str}`) }
     channels.logs[Session.id] = addLog
     channels.cmdl[Session.id] = []
@@ -650,6 +651,16 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     Session.death.then(() => {
         channels.chnl_webhooks[Session.id].delete()
         make_glot_post(logs.join("\n")).then((url:string) => {
+            if (channels.Static.logchannel) {
+                channels.Static.logchannel.send({
+                    embeds: [
+                        new Discord.MessageEmbed()
+                            .setTitle(`[${Date.now()}] ${new Date().toUTCString()}`)
+                            .setURL(url)
+                            .setDescription(logs.join("\n").slice(150)+"...")
+                    ]   
+                })
+            }
             channels.Dynamic[Session.id]
                 .send({embeds:[
                     new Discord.MessageEmbed()
@@ -741,6 +752,14 @@ client.on("ready",() => {
         channels.Static.targetGuild = guild
         if (!_config.serverCategory) {console.log("no serverCategory");process.exit(2)}
         
+        if (_config.log_channel) {
+            guild.channels.fetch(_config.serverCategory).then((txt) => {
+                if (txt?.isText()) {
+                    channels.Static.logchannel = txt
+                }
+            })
+        }
+
         guild.channels.fetch(_config.serverCategory).then((cat) => {
             if (!cat) {console.log("no category");process.exit(2)}
             if (cat.isText() || cat.isVoice()) {console.log("not category");process.exit(2)}

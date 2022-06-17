@@ -35,7 +35,7 @@ Your config.json file should look like this:
 	"role":"980692476769734666", // Optional
 	"api-disable":[ // Add this field to block certain API endpoints from being run on the server
 		"RunEval"
-	] 
+	],
 	// Adding RunEval to api-disable will prevent ut.server:Eval() from being run. This is recommended. If you don't add this to api-disable, anyone who connects to your RoControl host server can run custom code.
 }
 ```

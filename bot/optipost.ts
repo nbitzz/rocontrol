@@ -203,18 +203,20 @@ export class Optipost {
     readonly app:express.Application
     readonly port:number
     readonly url:string
+    readonly verbose:boolean
     private readonly _connection:BaseEvent=new BaseEvent()
     readonly connection:EventSignal
     private connections:OptipostSession[]=[]
     get _connections():OptipostSession[] {return this.connections}
-    constructor(port:number=3000,url:string="opti") {
+    constructor(port:number=3000,url:string="opti",options?:{limit:string|number,verbose:boolean}) {
         this.connection = this._connection.Event
 
         this.app = express()
         this.port = port
         this.url = url
-        this.app.use(bodyparser.json())
-
+        this.verbose = options?.verbose || false
+        this.app.use(bodyparser.json({limit:options?.limit || "100kb"}))
+    
         this.app.get("/"+url,(req:express.Request,res:express.Response) => {
             res.send(`Optipost online`)
         })
