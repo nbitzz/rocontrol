@@ -264,10 +264,8 @@ end
 
 function ut.util.getPlayers(str)
     if (not str) then return {} end
-    for x,v in pairs(ut.util.specialGetPlayerOptions) do
-        if (str == v) then
-            return v()
-        end
+    if (ut.util.specialGetPlayerOptions[str:lower()]) then
+        return ut.util.specialGetPlayerOptions[str:lower()]()
     end
     local players = {}
     for x,v in pairs(Players:GetPlayers()) do
