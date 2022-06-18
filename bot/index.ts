@@ -3,6 +3,7 @@ import Discord, { Intents } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
+import { FlowFlags } from "typescript"
 
 let _config = require("../config.json")
 let _flags = require("../flags.json")
@@ -202,7 +203,7 @@ let channels:{
                     return new Discord.MessageEmbed()
                         .setDescription(f.join("\n\n"))
                         .setTitle("Commands")
-                        .setColor("BLURPLE")
+                        .setColor(_flags.BotDefaultEmbedColor)
                 }
 
                 let pageNumber = 0
@@ -300,7 +301,7 @@ let channels:{
                     return new Discord.MessageEmbed()
                         .setDescription(f.join("\n\n"))
                         .setTitle("Commands")
-                        .setColor("BLURPLE")
+                        .setColor(_flags.BotDefaultEmbedColor)
                 }
 
                 let pageNumber = 0
@@ -408,7 +409,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         let ConnectionDialogueEmbed = new Discord.MessageEmbed()
         .setTitle("Connected")
         .setDescription(`Optipost Session ${session.id}\n\nJobId ${data.data}\nGameId ${data.gameid}`)
-        .setColor("BLURPLE")
+        .setColor(_flags.RobustConnectionDialogueColor||_flags.BotDefaultEmbedColor)
 
         let sendDialogue = () => {
             channels.Dynamic[session.id].send({embeds: [
@@ -447,19 +448,21 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                             inline:_flags.RobustConnectionDialogueFieldsAreInline
                         }
                     )
-                axios.get(`https://thumbnails.roblox.com/v1/assets?assetIds=${data.gameid}&size=384x216&format=Png&isCircular=false`).then((dataxx) => {
-                    if (dataxx.data.data) {
-                        if (_flags.UseLargeImageForRobustConnectionDialogue) {
-                            ConnectionDialogueEmbed.setImage(dataxx.data.data[0].imageUrl)
-                        } else {
-                            ConnectionDialogueEmbed.setThumbnail(dataxx.data.data[0].imageUrl)
+                if (_flags.RobustConnectionDialogueHasThumbnail) {
+                    axios.get(`https://thumbnails.roblox.com/v1/assets?assetIds=${data.gameid}&size=384x216&format=Png&isCircular=false`).then((dataxx) => {
+                        if (dataxx.data.data) {
+                            if (_flags.UseLargeImageForRobustConnectionDialogue) {
+                                ConnectionDialogueEmbed.setImage(dataxx.data.data[0].imageUrl)
+                            } else {
+                                ConnectionDialogueEmbed.setThumbnail(dataxx.data.data[0].imageUrl)
+                            }
                         }
-                    }
-                    sendDialogue()
-                }).catch((e) => {
-                    sendDialogue()
-                    console.log(e)
-                })
+                        sendDialogue()
+                    }).catch((e) => {
+                        sendDialogue()
+                        console.log(e)
+                    })
+                }
             }).catch((e) => {
                 console.log(e)
                 sendDialogue()
@@ -799,7 +802,7 @@ client.on("ready",() => {
 
     client.user?.setPresence({
         activities:[
-            {name:`${prefix}help | RoControl`,type:"STREAMING"}
+            {name:(_flags.BotStatus || "").replace(/\[pfx\]/g,prefix)||`${prefix}help | RoControl`,type:"PLAYING"}
         ],
     })
 

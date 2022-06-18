@@ -1,5 +1,10 @@
 {
+    "BotDefaultEmbedColor":"BLURPLE",
+    "BotStatus":"[pfx]help | RoControl",
+
     "RobustConnectionDialogue": true,
     "UseLargeImageForRobustConnectionDialogue":true,
-    "RobustConnectionDialogueFieldsAreInline":true
+    "RobustConnectionDialogueFieldsAreInline":true,
+    "RobustConnectionDialogueHasThumbnail":true,
+    "RobustConnectionDialogueColor":"BLURPLE"
 }
