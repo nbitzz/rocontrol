@@ -82,6 +82,14 @@ let make_glot_post:(data:string,postName?:string) => Promise<string> = (data:str
     })
 }
 
+let _FlagFormat = (str:string,datatypes:{[key:string]:string}) => {
+    let newstr = str
+    for (let [key,value] of Object.entries(datatypes)) {
+        newstr = newstr.replace(new RegExp(`\\$\\{${key}\\}`,"g"),value)
+    }
+    return newstr
+}
+
 const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOptions {
     // THIS CODE SUUUUUUUUUUUUUUCKS
     // DISCORD'S API MAKES ME WANT TO EXPLODE 
@@ -390,7 +398,7 @@ let channels:{
 
 
 // Set up server (http://127.0.0.1:3000/rocontrol)
-let OptipostServer = new Optipost(3000,"rocontrol")
+let OptipostServer = new Optipost(_flags.Port || 3000,"rocontrol",_flags.MaximumPayload||"100kb")
 
 
 let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantObject,addLog:(lg:string,ts?:boolean) => void) => void} = {
@@ -484,7 +492,13 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             axios.post(webhookURL,{
                 content:data.data,
                 avatar_url:channels.imgcache[data.userid.toString()],
-                username:`${data.displayname == data.username ? data.username : `${data.displayname} [${data.username}]`} (${data.userid})`,
+                username: _flags.UseCustomChatMessageUsername 
+                ? _FlagFormat(_flags.ChatMessageUsernameLayout,{
+                    DisplayName:data.displayname?.toString() || "?",
+                    Username:data.username?.toString() || "?",
+                    UserId:data.userid.toString()
+                }) 
+                : `${data.displayname == data.username ? data.username : `${data.displayname} [${data.username}]`} (${data.userid})`,
                 allowed_mentions: {
                     parse: []
                 }

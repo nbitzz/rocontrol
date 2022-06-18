@@ -4,6 +4,12 @@
     "LogChannelPreviewLength":100,
     "AutoTagColorization":true,
 
+    "UseCustomChatMessageUsername":false,
+    "ChatMessageUsernameLayout":"${DisplayName} [${Username}] (${UserId})",
+    
+    "MaximumPayload":"100kb",
+    "Port":3000,
+
     "RobustConnectionDialogue": true,
     "UseLargeImageForRobustConnectionDialogue":true,
     "RobustConnectionDialogueFieldsAreInline":true,

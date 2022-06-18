@@ -1,6 +1,6 @@
 {
   "name": "rocontrol",
-  "version": "rc.beta-126",
+  "version": "v0.9:dev",
   "description": "A simple Discord bot that connects to a Roblox game.",
   "main": "index.js",
   "scripts": {
