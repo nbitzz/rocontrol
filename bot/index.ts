@@ -718,7 +718,8 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                         new Discord.MessageEmbed()
                             .setTitle(`[${Date.now()}] ${new Date().toUTCString()}`)
                             .setURL(url)
-                            .setDescription(logs.join("\n").slice(0,50)+"...")
+                            .setDescription(logs.join("\n").slice(0,_flags.LogChannelPreviewLength||100)+"...")
+                            .setColor(_flags.BotDefaultEmbedColor)
                     ]   
                 })
             }

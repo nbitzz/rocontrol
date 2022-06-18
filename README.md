@@ -33,6 +33,7 @@ Your config.json file should look like this:
 	"archiveCategory":"978517203018219561",
 	"prefix":">",
 	"role":"980692476769734666", // Optional
+	"log_channel":"987183903485882408", // Optional
 	"api-disable":[ // Add this field to block certain API endpoints from being run on the server
 		"RunEval"
 	],

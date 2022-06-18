@@ -1,6 +1,7 @@
 {
     "BotDefaultEmbedColor":"BLURPLE",
     "BotStatus":"[pfx]help | RoControl",
+    "LogChannelPreviewLength":100,
 
     "RobustConnectionDialogue": true,
     "UseLargeImageForRobustConnectionDialogue":true,
