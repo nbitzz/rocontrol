@@ -361,10 +361,11 @@ local Actions = {
         },NameColor=Color3.new(1,0,0)}
         if (not session.flags.DisplayRoControlTagInRobloxChat) then
             extradata.NameColor = Color3.fromHex(data.tagColor or "#FFFFFF")
-            extradata.DisplayName = data.tag
             extradata.Tags = {}
+            ut.Speaker.PlayerObj = {DisplayName=data.tag,UserId=0}
         end
         ut.Speaker:SayMessage(data.data,"All",extradata)
+        ut.Speaker.PlayerObj = nil
     end,
     Image = function(session,data)
         local parentG = Instance.new("ScreenGui")
