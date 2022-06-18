@@ -484,7 +484,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             axios.post(webhookURL,{
                 content:data.data,
                 avatar_url:channels.imgcache[data.userid.toString()],
-                username:`${data.username} (${data.userid})`,
+                username:`${data.displayname == data.username ? data.username : `${data.displayname} [${data.username}]`} (${data.userid})`,
                 allowed_mentions: {
                     parse: []
                 }
@@ -526,7 +526,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         session.OldSend({type:"ok"})
     },
     Say:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
-        if (typeof data.data == "string") {channels.Dynamic[session.id].send(data.data)}
+        if (typeof data.data == "string") {channels.Dynamic[session.id].send(data.data).catch(() => {})}
         if (!data.data || typeof data.data != "object") {return}
         if (Array.isArray(data.data)) {return}
         
@@ -938,7 +938,7 @@ client.on("messageCreate",(message) => {
                     if (!foundSession) {return}
                     if (!channels.other[foundSession.id].DTRChatEnabled) {return}
                     if (message.content) {
-                        foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:message.member?.displayHexColor || "ffefcd"})
+                        foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:_flags.AutoTagColorization ? (message.member?.displayHexColor || "ffefcd") : "ffffff"})
                         channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)
                     }
 

@@ -2,6 +2,7 @@
     "BotDefaultEmbedColor":"BLURPLE",
     "BotStatus":"[pfx]help | RoControl",
     "LogChannelPreviewLength":100,
+    "AutoTagColorization":true,
 
     "RobustConnectionDialogue": true,
     "UseLargeImageForRobustConnectionDialogue":true,
