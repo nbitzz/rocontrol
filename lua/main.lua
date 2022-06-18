@@ -219,7 +219,7 @@ function ut.discord:OnButtonPressed(id,btnid)
     local b = Instance.new("BindableEvent")
 
     self.Session:On({type="ButtonPressed",messageId=id,id=btnid},function(data) 
-        b:Fire(data.userId)        
+        b:Fire({userId=data.userId,messageId=data.messageId})        
     end)
     return b.Event
 end
@@ -426,7 +426,7 @@ local Actions = {
     end,
     ExecuteCommand = function(session,data)
         if (session.api.commands.commands[data.commandId]) then
-            session.api.commands.commands[data.commandId](data.args)
+            session.api.commands.commands[data.commandId](data.args,{userId=data.userId,messageId=data.messageId})
         end
     end
 }

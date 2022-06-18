@@ -38,8 +38,8 @@ Contains all the commands
 
 Adds a command
 ```lua
-ut.commands:addCommand("testapp.test",{"test"},"Test command",1,function(args) 
-    ut.discord:Say("You passed in: "..args[1])
+ut.commands:addCommand("testapp.test",{"test"},"Test command",1,function(args,extradata) 
+    ut.discord:Say("You passed in: "..args[1].."\nYour discord UserID is: "..extradata.userId)
 end)
 ```
 
@@ -108,7 +108,7 @@ ut.commands:addCommand("testapp.vanish",{"vanish"},"Disable/enable Discord to Ro
 end)
 ```
 
-### RBXEventSignal&lt;string&gt; ut.discord:OnButtonPressed(messageid,buttonid)
+### RBXEventSignal&lt;{userId=string,messageId=string}&gt; ut.discord:OnButtonPressed(messageid,buttonid)
 Returns an event that is fired when a button is pressed
 ```lua
 local msg = ut.discord:Send({

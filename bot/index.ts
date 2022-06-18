@@ -915,7 +915,8 @@ client.on("messageCreate",(message) => {
                                 type:"ExecuteCommand",
                                 commandId:lcmd.id,
                                 args:args || [],
-                                userId:message.author.id
+                                userId:message.author.id,
+                                messageId:message.id
                             })
                         }
                     }
