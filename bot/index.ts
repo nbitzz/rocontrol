@@ -419,20 +419,49 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         // THIS CODE SUCKS SCREW YOU ROBLOX APIS
         
         if (_flags.RobustConnectionDialogue) {
-            axios.get(`https://games.roblox.com/v1/games/multiget-place-details?placeIds=${data.gameid}`).then((datax) => {
-                ConnectionDialogueEmbed.setTitle(datax.data.data[0].name)
-                ConnectionDialogueEmbed.setURL(datax.data.data[0].url)
-                ConnectionDialogueEmbed.setDescription(datax.data.data[0].description.slice(0,100))
-                ConnectionDialogueEmbed.setAuthor(datax.data.data[0].builder)
+            axios.get(`https://www.roblox.com/places/api-get-details?assetId=${data.gameid}`).then((datax) => {
+                let up = datax.data.TotalUpVotes, down = datax.data.TotalDownVotes
+
+                let score = up-down, maxScore = up+down
+
+                // God this code sucks. Clean it up a little, maybe?
+
+                ConnectionDialogueEmbed.setTitle(datax.data.Name)
+                    .setURL(`https://roblox.com/games/${data.gameid}/--`)
+                    .setDescription(datax.data.Description.slice(0,100))
+                    .setAuthor({name:datax.data.Builder,url:datax.data.BuilderAbsoluteUrl})
+                    .addFields(
+                        {
+                            name:"Created/Updated",
+                            value:`Created ${datax.data.Created}\nUpdated ${datax.data.Updated}`,
+                            inline:true
+                        },
+                        {
+                            name:"Ratings",
+                            value:`${datax.data.VisitedCount} visits\n👍 ${datax.data.TotalUpVotes}\n👎 ${datax.data.TotalDownVotes}\n⭐ ${datax.data.FavoritedCount}\n${"⬜".repeat(Math.round((up/maxScore)*10))}${"⬛".repeat(10-Math.round((up/maxScore)*10))} ${Math.round((up/maxScore)*100)}%`,
+                            inline:true
+                        },
+                        {
+                            name:"Player Stats",
+                            value:`${datax.data.OnlineCount} ingame now\nMaximum players per server: ${datax.data.MaxPlayers}`,
+                            inline:true
+                        }
+                    )
                 axios.get(`https://thumbnails.roblox.com/v1/assets?assetIds=${data.gameid}&size=384x216&format=Png&isCircular=false`).then((dataxx) => {
                     if (dataxx.data.data) {
-                        ConnectionDialogueEmbed.setThumbnail(dataxx.data.data[0].imageUrl)
+                        if (_flags.UseLargeImageForRobustConnectionDialogue) {
+                            ConnectionDialogueEmbed.setImage(dataxx.data.data[0].imageUrl)
+                        } else {
+                            ConnectionDialogueEmbed.setThumbnail(dataxx.data.data[0].imageUrl)
+                        }
                     }
                     sendDialogue()
-                }).catch(() => {
+                }).catch((e) => {
                     sendDialogue()
+                    console.log(e)
                 })
-            }).catch(() => {
+            }).catch((e) => {
+                console.log(e)
                 sendDialogue()
             })
         } else {
