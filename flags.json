@@ -14,5 +14,7 @@
     "UseLargeImageForRobustConnectionDialogue":true,
     "RobustConnectionDialogueFieldsAreInline":true,
     "RobustConnectionDialogueHasThumbnail":true,
-    "RobustConnectionDialogueColor":"BLURPLE"
+    "RobustConnectionDialogueColor":"BLURPLE",
+    
+    "DisplayRoControlTagInRobloxChat":true
 }

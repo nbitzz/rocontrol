@@ -335,6 +335,8 @@ end
 
 local Actions = {
     Ready = function(session,data)
+        session.flags = data.flags
+
         session:Send({
             type = "GetGameInfo",
             data = game.JobId,
@@ -351,12 +353,18 @@ local Actions = {
         end
     end,
     Chat = function(session,data)
-        ut.Speaker:SayMessage(data.data,"All",{Tags={
+        local extradata = {Tags={
             {
                 TagText = "as "..data.tag,
                 TagColor = Color3.fromHex(data.tagColor or "#FFFFFF")
             }
-        },NameColor=Color3.new(1,0,0)})
+        },NameColor=Color3.new(1,0,0)}
+        if (not session.flags.DisplayRoControlTagInRobloxChat) then
+            extradata.NameColor = Color3.fromHex(data.tagColor or "#FFFFFF")
+            extradata.DisplayName = data.tag
+            extradata.Tags = {}
+        end
+        ut.Speaker:SayMessage(data.data,"All",extradata)
     end,
     Image = function(session,data)
         local parentG = Instance.new("ScreenGui")

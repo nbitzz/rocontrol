@@ -708,7 +708,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
             channels.Dynamic[Session.id] = channel
             channels.chnl_webhooks[Session.id] = webhook
             channel.setParent(channels.Static.category)
-            Session.Send({type:"Ready"})
+            Session.Send({type:"Ready",flags:_flags})
         })
     })
 
