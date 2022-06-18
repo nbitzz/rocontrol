@@ -817,7 +817,7 @@ client.on("ready",() => {
 
     client.user?.setPresence({
         activities:[
-            {name:(_flags.BotStatus || "").replace(/\[pfx\]/g,prefix)||`${prefix}help | RoControl`,type:"PLAYING"}
+            {name:_FlagFormat((_flags.BotStatus || ""),{prefix:prefix})||`${prefix}help | RoControl`,type:"PLAYING"}
         ],
     })
 

@@ -1,6 +1,6 @@
 {
     "BotDefaultEmbedColor":"BLURPLE",
-    "BotStatus":"[pfx]help | RoControl",
+    "BotStatus":"${prefix}help | RoControl",
     "LogChannelPreviewLength":100,
     "AutoTagColorization":true,
 
