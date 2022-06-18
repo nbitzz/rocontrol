@@ -434,17 +434,17 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                         {
                             name:"Created/Updated",
                             value:`Created ${datax.data.Created}\nUpdated ${datax.data.Updated}`,
-                            inline:true
+                            inline:_flags.RobustConnectionDialogueFieldsAreInline
                         },
                         {
                             name:"Ratings",
                             value:`${datax.data.VisitedCount} visits\n👍 ${datax.data.TotalUpVotes}\n👎 ${datax.data.TotalDownVotes}\n⭐ ${datax.data.FavoritedCount}\n${"⬜".repeat(Math.round((up/maxScore)*10))}${"⬛".repeat(10-Math.round((up/maxScore)*10))} ${Math.round((up/maxScore)*100)}%`,
-                            inline:true
+                            inline:_flags.RobustConnectionDialogueFieldsAreInline
                         },
                         {
                             name:"Player Stats",
                             value:`${datax.data.OnlineCount} ingame now\nMaximum players per server: ${datax.data.MaxPlayers}`,
-                            inline:true
+                            inline:_flags.RobustConnectionDialogueFieldsAreInline
                         }
                     )
                 axios.get(`https://thumbnails.roblox.com/v1/assets?assetIds=${data.gameid}&size=384x216&format=Png&isCircular=false`).then((dataxx) => {

@@ -1,4 +1,5 @@
 {
     "RobustConnectionDialogue": true,
-    "UseLargeImageForRobustConnectionDialogue":true
+    "UseLargeImageForRobustConnectionDialogue":true,
+    "RobustConnectionDialogueFieldsAreInline":true
 }
