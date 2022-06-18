@@ -345,6 +345,7 @@ local Actions = {
         if script:FindFirstChild("packages") then
             for x,v in pairs(script.packages:GetChildren()) do
                 if (v:IsA("ModuleScript")) then
+                    session.api.server:Log("Loading package "..v.Name)
                     require(v)(session.api)
                 end
             end
