@@ -1,5 +1,6 @@
 {
     "BotDefaultEmbedColor":"BLURPLE",
+    "BotDefaultErrorEmbedColor":"RED",
     "BotStatus":"${prefix}help | RoControl",
     "LogChannelPreviewLength":100,
     "AutoTagColorization":true,

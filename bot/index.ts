@@ -32,6 +32,7 @@ interface RoControlCommand {
     names:string[],
     id:string,
     desc:string,
+    roleid?:string
 }
 
 interface rgba {
@@ -304,12 +305,23 @@ let channels:{
                 targetTable.push(...channels.local_cmds)
                 targetTable.push(...channels.cmdl[session.id])
                 let createPageEmbed = function(page:number) {
-                    let f:string[] = targetTable.slice(5*page,5*(page+1)).map((v) => `**${v.names[0]}** ${v.names.slice(1).join(", ")}\n${v.desc}`)
+                    let f:string[] = targetTable.slice(5*page,5*(page+1)).map((v) => {
+                        // This code sucks
+                        function hasRoleId(object: any): object is RoControlCommand {
+                            return 'roleid' in object;
+                        }
+                        let displayNoEntrySign = false
+                        if (hasRoleId(v) && v.roleid) {
+                            displayNoEntrySign = !message.member?.roles.cache.has(v.roleid) || false
+                        }
+                        
+                        return `**${displayNoEntrySign ? "🚫 " : ""}${v.names[0]}** ${v.names.slice(1).join(", ")}\n${v.desc}`
+                    })
                     
                     return new Discord.MessageEmbed()
                         .setDescription(f.join("\n\n"))
                         .setTitle("Commands")
-                        .setColor(_flags.BotDefaultEmbedColor)
+                        .setColor(_flags.BotDefaultErrorEmbedColor)
                 }
 
                 let pageNumber = 0
@@ -526,14 +538,15 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     RegisterCommand: (session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!Array.isArray(data.names) || typeof data.id != "string" || typeof data.desc != "string" || typeof data.args_amt != "number") {return}
 
-        addLog(`Session registered command: ${data.id} (${data.names.join(",")})`)
+        addLog(`Session registered command: ${data.id} (${data.names.join(",")}), locked to role ${data.roleid}`)
 
         channels.cmdl[session.id].push(
             {
                 names:data.names.filter((e):e is string => typeof e == "string"),
                 id:data.id,
                 args:data.args_amt,
-                desc:data.desc
+                desc:data.desc,
+                roleid: (data.roleid?.toString()||undefined)
             }
         )
 
@@ -910,6 +923,18 @@ client.on("messageCreate",(message) => {
                             if (lastParameter) {args.push(lastParameter)}
 
                             channels.logs[foundSession.id](`${message.author.tag} ExecuteCommand: ${lcmd.id} (${message.content})`)
+                            if (lcmd.roleid) {
+                                if (!message.member?.roles.cache.has(lcmd.roleid)) {
+                                    message.channel.send({embeds:[
+                                        new Discord.MessageEmbed()
+                                            .setColor(_flags.BotDefaultEmbedColor)
+                                            .setTitle("Permission error")
+                                            .setDescription(`You do not have permission to run this command (${lcmd.id}).\n\nPlease obtain the role <@&${lcmd.roleid}>, then try again.`)
+                                    ]})
+                                    
+                                    return
+                                }
+                            }
 
                             foundSession.Send({
                                 type:"ExecuteCommand",

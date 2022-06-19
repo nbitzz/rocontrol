@@ -34,9 +34,9 @@ Creates a new ut api for the session
 
 Contains all the commands
 
-### void ut.commands:addCommand(id,commandAliases,desc,args_amt,action)
+### void ut.commands:addCommand(id,commandAliases,desc,args_amt,action,roleId?)
 
-Adds a command
+Adds a command. If roleId is specified, everyone who does not have the specified role cannot run the command.
 ```lua
 ut.commands:addCommand("testapp.test",{"test"},"Test command",1,function(args,extradata) 
     ut.discord:Say("You passed in: "..args[1].."\nYour discord UserID is: "..extradata.userId)

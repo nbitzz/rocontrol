@@ -64,7 +64,7 @@ ut.commands = {
     Session = nil
 }
 
-function ut.commands:addCommand(id,commandAliases,desc,args_amt,action)
+function ut.commands:addCommand(id,commandAliases,desc,args_amt,action,roleid)
     if not self.Session then error("Cannot addCommand when Session is nil.") end
 
     ut.commands.commands[id] = action
@@ -74,7 +74,8 @@ function ut.commands:addCommand(id,commandAliases,desc,args_amt,action)
         names = commandAliases,
         id = id,
         args_amt = args_amt,
-        desc=desc
+        desc=desc,
+        roleid=roleid
     })
 end
 
