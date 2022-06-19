@@ -321,7 +321,7 @@ let channels:{
                     return new Discord.MessageEmbed()
                         .setDescription(f.join("\n\n"))
                         .setTitle("Commands")
-                        .setColor(_flags.BotDefaultErrorEmbedColor)
+                        .setColor(_flags.BotDefaultEmbedColor)
                 }
 
                 let pageNumber = 0
@@ -927,7 +927,7 @@ client.on("messageCreate",(message) => {
                                 if (!message.member?.roles.cache.has(lcmd.roleid)) {
                                     message.channel.send({embeds:[
                                         new Discord.MessageEmbed()
-                                            .setColor(_flags.BotDefaultEmbedColor)
+                                            .setColor(_flags.BotDefaultErrorEmbedColor)
                                             .setTitle("Permission error")
                                             .setDescription(`You do not have permission to run this command (${lcmd.id}).\n\nPlease obtain the role <@&${lcmd.roleid}>, then try again.`)
                                     ]})
