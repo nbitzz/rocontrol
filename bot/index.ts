@@ -612,7 +612,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             } else {
                 failSendMessage()
             }
-        })
+        }).catch(() => {})
         
     },
     ViaWebhook:(session:OptipostSession,data:JSONCompliantObject,addLog) => {

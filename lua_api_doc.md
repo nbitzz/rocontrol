@@ -71,7 +71,7 @@ Sends a message in the connected Discord channel, equivalent to Say but replies 
 Sends a DM to someone.
 ```lua
 ut.commands:addCommand("test.dmtest",{"dmtest"},"Test DMs",0,function(args,extradata) 
-    ut.discord:DirectMessage(extradata.messageId,"Hello world!")
+    ut.discord:DirectMessage(extradata.userId,"Hello world!")
 end)
 ```
 
