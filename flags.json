@@ -5,6 +5,9 @@
     "LogChannelPreviewLength":100,
     "AutoTagColorization":true,
 
+    "MaximumDirectMessagesPerMinute": 60,
+    "MaximumDirectMessagesPerSecond": 1,
+
     "UseCustomChatMessageUsername":false,
     "ChatMessageUsernameLayout":"${DisplayName} [${Username}] (${UserId})",
     

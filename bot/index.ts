@@ -199,7 +199,12 @@ let channels:{
     imgcache:{},
     cmdl:{},
     logs:{},
-    other:{},
+    other:{
+        _ratelimits: {
+            DMsThisSecond:0,
+            DMsThisMinute:0,
+        }
+    },
     global_cmds:[
         {
             names:["help","h"],
@@ -553,7 +558,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         session.OldSend({type:"ok"})
     },
     Say:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
-        if (typeof data.data == "string") {channels.Dynamic[session.id].send(data.data).catch(() => {})}
+        if (typeof data.data == "string") {data.data = {content:data.data}}
         if (!data.data || typeof data.data != "object") {return}
         if (Array.isArray(data.data)) {return}
         
@@ -561,7 +566,17 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             addLog(data.data.content,true)
         }
 
-        channels.Dynamic[session.id].send(ProcessMessageData(data.data)).catch(() => {})
+        let SendFunction = channels.Dynamic[session.id].send
+
+        if (data.data.replyto && typeof(data.data.replyto) == "string") {
+            channels.Dynamic[session.id].messages.fetch(data.data.replyto).then((msg) => {
+                if (msg) {
+                    SendFunction = msg.reply
+                }
+            })
+        }
+
+        SendFunction(ProcessMessageData(data.data)).catch(() => {})
     },
     ViaWebhook:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!data.data) {return}
@@ -1039,5 +1054,8 @@ client.on("interactionCreate",(int) => {
         }
     }
 })
+
+setInterval(() => {channels.other._ratelimits.DMsThisSecond=0},1000)
+setInterval(() => {channels.other._ratelimits.DMsThisMinute=0},60000)
 
 client.login(_config.token)

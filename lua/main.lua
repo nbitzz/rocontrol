@@ -153,6 +153,22 @@ function ut.discord:Say(str)
     })
 end
 
+function ut.discord:Reply(msgid,str)
+    if not self.Session then error("Cannot Reply when Session is nil.") end
+    if (typeof(str) == "table") then
+        str = {
+            replyto=msgid,
+            content=str
+        }
+    else
+        str.replyto = msgid
+    end
+    self.Session:Send({
+        type = "Say",
+        data=str
+    })
+end
+
 function ut.discord:Edit(id,str)
     if not self.Session then error("Cannot Edit when Session is nil.") end
     local realData = str
