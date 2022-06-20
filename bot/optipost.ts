@@ -3,6 +3,7 @@ import bodyparser from "body-parser"
 import { BaseEvent,EventSignal } from "./events"
 import crypto from "crypto"
 
+// Forgot to add a null here. TODO: add null without breaking everything
 export type JSONCompliantArray = Array<string|number|boolean|JSONCompliantArray|JSONCompliantObject>
 
 export interface JSONCompliantObject {

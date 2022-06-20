@@ -566,17 +566,19 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             addLog(data.data.content,true)
         }
 
-        let SendFunction = channels.Dynamic[session.id].send
-
+        let channel = channels.Dynamic[session.id]
+        
         if (data.data.replyto && typeof(data.data.replyto) == "string") {
-            channels.Dynamic[session.id].messages.fetch(data.data.replyto).then((msg) => {
+            channel.messages.fetch(data.data.replyto).then((msg) => {
                 if (msg) {
-                    SendFunction = msg.reply
+                    if (!data.data || typeof data.data != "object") {return}
+                    if (Array.isArray(data.data)) {return}
+                    msg.reply(ProcessMessageData(data.data)).catch(() => {})
                 }
             })
+        } else {
+            channel.send(ProcessMessageData(data.data)).catch(() => {})
         }
-
-        SendFunction(ProcessMessageData(data.data)).catch(() => {})
     },
     ViaWebhook:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!data.data) {return}
@@ -590,13 +592,31 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             addLog(data.data.content,true)
         }
 
-        channels.Dynamic[session.id].send(ProcessMessageData(data.data)).then((msg) => {
-            session.Send({
-                type:"MessageSent",
-                data:msg.id,
-                key:data.key
+        let channel = channels.Dynamic[session.id]
+        
+        if (data.data.replyto && typeof(data.data.replyto) == "string") {
+            channel.messages.fetch(data.data.replyto).then((msg) => {
+                if (msg) {
+                    if (!data.data || typeof data.data != "object") {return}
+                    if (Array.isArray(data.data)) {return}
+                    msg.reply(ProcessMessageData(data.data)).then((msg) => {
+                        session.Send({
+                            type:"MessageSent",
+                            data:msg.id,
+                            key:data.key
+                        })
+                    }).catch(() => {})
+                }
             })
-        }).catch(() => {})
+        } else {
+            channel.send(ProcessMessageData(data.data)).then((msg) => {
+                session.Send({
+                    type:"MessageSent",
+                    data:msg.id,
+                    key:data.key
+                })
+            }).catch(() => {})
+        }
     },
     DeleteMessage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!data.data || typeof data.data != "string") {return}

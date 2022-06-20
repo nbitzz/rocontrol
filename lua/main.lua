@@ -337,6 +337,7 @@ end
 
 -- ut init
 
+
 function ut.init(session)
     local x = table.clone(ut)
     for _,v in pairs(x) do
@@ -345,6 +346,7 @@ function ut.init(session)
         end
     end
     x.Session = session
+    x.StartSession = StartSession
     return x
 end
 
