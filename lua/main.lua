@@ -153,6 +153,15 @@ function ut.discord:Say(str)
     })
 end
 
+function ut.discord:DirectMessage(msgid,str)
+    if not self.Session then error("Cannot DirectMessage when Session is nil.") end
+    self.Session:Send({
+        type = "DirectMessage",
+        data=str,
+        target=msgid
+    })
+end
+
 function ut.discord:QuickReply(msgid,str)
     if not self.Session then error("Cannot Reply when Session is nil.") end
     if (typeof(str) == "table") then

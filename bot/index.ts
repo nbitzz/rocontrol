@@ -1,5 +1,5 @@
 import axios from "axios"
-import Discord, { Intents } from "discord.js"
+import Discord, { Intents, Message } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
@@ -102,9 +102,9 @@ const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOpti
         T_MSGO.content = obj.content
     }
 
-    if (obj.embeds && Array.isArray(obj.embeds)) {
-        T_MSGO.embeds = []
+    T_MSGO.embeds = []
 
+    if (obj.embeds && Array.isArray(obj.embeds)) {
         obj.embeds.forEach((v:{}) => {
             T_MSGO.embeds.push(new Discord.MessageEmbed(v))
         })
@@ -579,6 +579,41 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         } else {
             channel.send(ProcessMessageData(data.data)).catch(() => {})
         }
+    },
+    DirectMessage:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (typeof data.data == "string") {data.data = {content:data.data}}
+        if (!data.data || typeof data.data != "object" || !data.target || typeof data.target != "string") {return}
+        if (Array.isArray(data.data)) {return}
+        
+        if (data.data.content && typeof data.data.content == "string") {
+            addLog(data.data.content,true)
+        }
+        
+        // ts stupidness
+
+        client.users.fetch(data.target).then((user) => {
+            if (!data.data || typeof data.data != "object" || !data.target || typeof data.target != "string") {return}
+            if (Array.isArray(data.data)) {return}
+            
+            let failSendMessage = () => {
+                if (!data.data || typeof data.data != "object" || !data.target || typeof data.target != "string") {return}
+                if (Array.isArray(data.data)) {return}
+                channels.Dynamic[session.id].send(`A direct message to <@${user.id}> failed:`).catch(() => {})
+                channels.Dynamic[session.id].send(ProcessMessageData(data.data)).catch(() => {})
+            }
+
+            if (
+                channels.other._ratelimits.DMsThisMinute <= _flags.MaximumDirectMessagesPerMinute
+                && channels.other._ratelimits.DMsThisSecond <= _flags.MaximumDirectMessagesPerSecond
+            ) {
+                user.send(ProcessMessageData(data.data)).catch(() => {
+                    failSendMessage()
+                })
+            } else {
+                failSendMessage()
+            }
+        })
+        
     },
     ViaWebhook:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (!data.data) {return}
