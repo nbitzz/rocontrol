@@ -62,11 +62,24 @@ Sends a message in the connected Discord channel
 ut.discord:Say("Hello world!")
 ```
 
+### void ut.discord:QuickReply(msgid,data)
+
+Sends a message in the connected Discord channel, equivalent to Say
+
 ### YIELDS string ut.discord:Send(data)
 
 Sends a message in the connected Discord channel. Returns the ID.
 ```lua
 ut.discord:Send("Hello world!")
+```
+
+### YIELDS string ut.discord:Reply(msgid,data)
+
+Replies to a a message in the connected Discord channel. Returns the ID.
+```lua
+ut.commands:addCommand("test.replytome",{"replytest"},"Test replies",0,function(args,extradata) 
+    ut.discord:Reply(extradata.messageId,"Hello world!")
+end)
 ```
 
 ### void ut.discord:Edit(id,data)
