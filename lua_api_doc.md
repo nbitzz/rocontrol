@@ -64,7 +64,16 @@ ut.discord:Say("Hello world!")
 
 ### void ut.discord:QuickReply(msgid,data)
 
-Sends a message in the connected Discord channel, equivalent to Say
+Sends a message in the connected Discord channel, equivalent to Say but replies to a message instead
+
+### void ut.discord:DirectMessage(msgid,data)
+
+Sends a DM to someone.
+```lua
+ut.commands:addCommand("test.dmtest",{"dmtest"},"Test DMs",0,function(args,extradata) 
+    ut.discord:DirectMessage(extradata.messageId,"Hello world!")
+end)
+```
 
 ### YIELDS string ut.discord:Send(data)
 
@@ -77,7 +86,7 @@ ut.discord:Send("Hello world!")
 
 Replies to a a message in the connected Discord channel. Returns the ID.
 ```lua
-ut.commands:addCommand("test.replytome",{"replytest"},"Test replies",0,function(args,extradata) 
+ut.commands:addCommand("test.replytest",{"replytest"},"Test replies",0,function(args,extradata) 
     ut.discord:Reply(extradata.messageId,"Hello world!")
 end)
 ```
