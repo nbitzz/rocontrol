@@ -606,7 +606,12 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                 channels.other._ratelimits.DMsThisMinute <= _flags.MaximumDirectMessagesPerMinute
                 && channels.other._ratelimits.DMsThisSecond <= _flags.MaximumDirectMessagesPerSecond
             ) {
-                user.send(ProcessMessageData(data.data)).catch(() => {
+                user.send(ProcessMessageData(data.data)).then(() => {
+                    if (_flags.DirectMessageRatelimit) {
+                        channels.other._ratelimits.DMsThisMinute++
+                        channels.other._ratelimits.DMsThisSecond++
+                    }
+                }).catch(() => {
                     failSendMessage()
                 })
             } else {
@@ -1110,7 +1115,9 @@ client.on("interactionCreate",(int) => {
     }
 })
 
-setInterval(() => {channels.other._ratelimits.DMsThisSecond=0},1000)
-setInterval(() => {channels.other._ratelimits.DMsThisMinute=0},60000)
+if (_flags.DirectMessageRatelimit) {
+    setInterval(() => {channels.other._ratelimits.DMsThisSecond=0},1000)
+    setInterval(() => {channels.other._ratelimits.DMsThisMinute=0},60000)
+}
 
 client.login(_config.token)
