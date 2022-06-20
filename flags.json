@@ -5,6 +5,7 @@
     "LogChannelPreviewLength":100,
     "AutoTagColorization":true,
 
+    "DirectMessageRatelimit":true,
     "MaximumDirectMessagesPerMinute": 60,
     "MaximumDirectMessagesPerSecond": 1,
 
