@@ -94,7 +94,7 @@ let _FlagFormat = (str:string,datatypes:{[key:string]:string}) => {
 let _TimeFormat = (seconds:number) => {
     let mins = Math.floor(seconds/60)
     let secs = seconds % 60
-    return `${mins || ""}${mins ? " minutes" : ""}${secs && mins ? " " : ""}${secs || ""}${secs ? " seconds" : ""}`
+    return `${mins || ""}${mins ? ` minute${mins == 1 ? "" : "s"}` : ""}${secs && mins ? " and " : ""}${secs || ""}${secs ? ` second${secs == 1 ? "" : "s"}` : ""}`
 }
 
 const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOptions {
