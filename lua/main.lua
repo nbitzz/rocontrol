@@ -222,23 +222,6 @@ function ut.discord:Send(str)
     },"MessageSent")
 end
 
-function ut.discord:Send(msgid,str)
-    if (not str) then error("Cannot Send empty string") end
-    if not self.Session then error("Cannot Send when Session is nil.") end
-
-    local realData = str
-    if (typeof(str) == "string") then
-        realData = {content=str,replyto=msgid}
-    else
-        str.replyto = msgid
-    end
-
-    return ut.YieldGet(self.Session,{
-        type = "SendMessage",
-        data=realData
-    },"MessageSent")
-end
-
 function ut.discord:Reply(msgid,str)
     if (not str) then error("Cannot Send empty string") end
     if not self.Session then error("Cannot Send when Session is nil.") end
