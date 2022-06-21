@@ -9,6 +9,8 @@
     "MaximumDirectMessagesPerMinute": 60,
     "MaximumDirectMessagesPerSecond": 1,
 
+    "ChannelAutoDeleteTimer":600,
+
     "UseCustomChatMessageUsername":false,
     "ChatMessageUsernameLayout":"${DisplayName} [${Username}] (${UserId})",
     

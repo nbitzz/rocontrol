@@ -67,10 +67,10 @@ let client = new Discord.Client({ intents: [
     Intents.FLAGS.GUILD_MESSAGE_TYPING
 ] })
 
-let clamp = (min:number,max:number,target:number) => Math.min(Math.max(target,min),max)
-
 if (!_config.prefix) {process.exit()}
 let prefix:string = _config.prefix
+
+let clamp = (min:number,max:number,target:number) => Math.min(Math.max(target,min),max)
 
 let make_glot_post:(data:string,postName?:string) => Promise<string> = (data:string,postName?:string) => {
     let TargetPostName:string = postName || `${new Date().toUTCString()} Log Export - RoCtrl`
@@ -89,6 +89,12 @@ let _FlagFormat = (str:string,datatypes:{[key:string]:string}) => {
         newstr = newstr.replace(new RegExp(`\\$\\{${key}\\}`,"g"),value)
     }
     return newstr
+}
+
+let _TimeFormat = (seconds:number) => {
+    let mins = Math.floor(seconds/60)
+    let secs = seconds % 60
+    return `${mins || ""}${mins ? " minutes" : ""}${secs && mins ? " " : ""}${secs || ""}${secs ? " seconds" : "seconds"}`
 }
 
 const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOptions {
@@ -830,7 +836,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                     new Discord.MessageEmbed()
                         .setColor("RED")
                         .setTitle("Session ended")
-                        .setDescription("This channel will be automatically deleted in 10 minutes. Click the Archive button to move it to the Archive category.")
+                        .setDescription(`This channel will be automatically deleted in ${_TimeFormat(_flags.ChannelAutoDeleteTimer)}. Click the Archive button to move it to the Archive category.`)
                 ],components:[
                     new Discord.MessageActionRow()
                         .addComponents(
@@ -851,7 +857,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                                 .setLabel("Delete"),
                         )
                 ]}).then((msg:Discord.Message) => {
-                    let col = msg.createMessageComponentCollector({componentType:"BUTTON",time:600000})
+                    let col = msg.createMessageComponentCollector({componentType:"BUTTON",time:_flags.ChannelAutoDeleteTimer*1000})
 
                     let success = false
 
