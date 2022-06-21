@@ -164,7 +164,7 @@ end
 
 function ut.discord:QuickReply(msgid,str)
     if not self.Session then error("Cannot Reply when Session is nil.") end
-    if (typeof(str) == "table") then
+    if (typeof(str) == "string") then
         str = {
             replyto=msgid,
             content=str

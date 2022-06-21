@@ -838,7 +838,8 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                                 .setCustomId("ARCHIVE_CHANNEL")
                                 .setEmoji("🗃")
                                 .setStyle("SUCCESS")
-                                .setLabel("Archive"),
+                                .setLabel("Archive")
+                                .setDisabled(Array.from(channels.Static.archive?.children?.values() || new Array(60)).length < 50),
                             new Discord.MessageButton()
                                 .setStyle("LINK")
                                 .setURL(url)
@@ -930,9 +931,10 @@ client.on("ready",() => {
             if (!_config.archiveCategory) {console.log("no process.env.ARCHIVE_CATEGORY");process.exit(2)}
 
             guild.channels.fetch(_config.archiveCategory).then((acat)=> {
-                if (!acat) {console.log("no category");process.exit(2)}
-                if (acat.isText() || acat.isVoice()) {console.log("not category");process.exit(2)}
-                
+                //if (!acat) {console.log("no category");process.exit(2)}
+                if (acat) {
+                    if (acat.isText() || acat.isVoice()) {console.log("not category");process.exit(2)}
+                }
                 //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
                 channels.Static.category = cat
                 //@ts-ignore | TODO: Find way to not use a @ts-ignore call for this!
