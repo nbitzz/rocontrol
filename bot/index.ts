@@ -148,6 +148,9 @@ const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOpti
                 if (typeof v.emoji == "string" && !v.url) {
                     btn.setEmoji(v.emoji)
                 }
+                if (v.disabled) {
+                    btn.setDisabled(true)
+                }
 
                 realComponents.push(btn)
             } else if (v == "\n") {
