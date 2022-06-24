@@ -247,6 +247,15 @@ function ut.discord:GetChatEnabled()
     },"GetDiscordToRobloxChatEnabled")
 end
 
+function ut.discord:GetInformationForMember(userid)
+    if not self.Session then error("Cannot GetInformationForMember when Session is nil.") end
+
+    return ut.YieldGet(self.Session,{
+        type = "GetInformationForMember",
+        id = userid
+    },"GetInformationForMember")
+end
+
 function ut.discord:SetChatEnabled(bool)
     if not self.Session then error("Cannot SetChatEnabled when Session is nil.") end
 

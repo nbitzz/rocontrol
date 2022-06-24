@@ -4,6 +4,7 @@ import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
 import { FlowFlags } from "typescript"
+import { MembershipStates } from "discord.js/typings/enums"
 
 let _config = require("../config.json")
 let _flags = require("../flags.json")
@@ -689,6 +690,25 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
             msg.edit({components:x.components,content:x.content,embeds:x.embeds}).catch(() => {})
         }).catch(() => {})
     },
+    GetInformationForMember:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
+        if (channels.Static.targetGuild && typeof data.id == "string") {
+            channels.Static.targetGuild.members.fetch(data.id).then((memb) => {
+                session.Send({type:"GuildMemberInformation",data:{
+                    validUser:true,
+                    tag:memb.user.tag,
+                    username:memb.user.username,
+                    discriminator:memb.user.discriminator,
+                    roles:Array.from(memb.roles.cache.values()).map((e) => {return e.id}),
+                    hasAccess:!_config.role || memb.roles.cache.has(_config.role)
+                },key:data.key})
+            }).catch(() => {
+                session.Send({type:"GuildMemberInformation",data:{
+                    validUser:false
+                },key:data.key})
+            })
+        }
+        
+    },
     GetData:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.key != "string") {return}
         
@@ -865,6 +885,17 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                     let success = false
 
                     col.on("collect", (int) => {
+                        
+                        // i hat eyou discord apis
+                        // if this breaks it i swear to god
+
+                        let memb = channels.Static.targetGuild?.members.resolve(int.user)
+
+                        if (_config.role) {
+                            if (!memb?.roles.cache.has(_config.role)) {
+                                return
+                            }
+                        }
 
                         switch (int.customId) {
                             case "ARCHIVE_CHANNEL":
@@ -1103,7 +1134,17 @@ client.on("messageCreate",(message) => {
 })
 
 client.on("interactionCreate",(int) => {
+
     if (int.isButton()) {
+        
+        let memb = channels.Static.targetGuild?.members.resolve(int.user)
+
+        if (_config.role) {
+            if (!memb?.roles.cache.has(_config.role)) {
+                return
+            }
+        }
+        
         if (int.customId.startsWith("rcBtn.")) {
             int.deferUpdate()
             // Need to find a better way to do this
