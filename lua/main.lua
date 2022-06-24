@@ -253,7 +253,7 @@ function ut.discord:GetInformationForMember(userid)
     return ut.YieldGet(self.Session,{
         type = "GetInformationForMember",
         id = userid
-    },"GetInformationForMember")
+    },"GuildMemberInformation")
 end
 
 function ut.discord:SetChatEnabled(bool)
