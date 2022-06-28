@@ -120,10 +120,10 @@ export class OptipostSession {
     _Send(reply:BasicReply,timesSoFar:number=0):void {
         if (timesSoFar == 5) {console.warn(`WARN! DATA DROPPED AT ${Date.now()}`);}
         
-        let Target = this.Requests.find(e => e.Dead == false)
+        this.Requests = this.Requests.filter(e => !e.Dead)
         
-        if (Target) {
-            Target.Reply(reply)
+        if (this.Requests[0]) {
+            this.Requests[0].Reply(reply)
         } else {
             console.log("WARN! Could not find an open request. Waiting for a new one to come in...")
             let a:NodeJS.Timeout|null = null
