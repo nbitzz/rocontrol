@@ -826,6 +826,19 @@ OptipostServer.connection.then((Session:OptipostSession) => {
         channel.createWebhook("RoControl Chat").then((webhook) => {
             channels.chnl_webhooks[Session.id] = webhook
             Session.Send({type:"Ready",flags:_flags})
+
+            let channels_until_archive_full = 50-Array.from(channels.Static.archive?.children?.values() || []).length
+        
+            if (channels_until_archive_full <= _flags.ChannelArchiveWarningLimit) {
+                channel.send({
+                    embeds: [
+                        new Discord.MessageEmbed()
+                            .setTitle("⚠ Archive Almost Full")
+                            .setDescription(`You only have ${channels_until_archive_full} archive${channels_until_archive_full == 1 ? "" : "s"} left.\n\nYou will not be able to archive any more channels once this limit is reached.\nConsider either removing channels from the archive or creating a new category.`)
+                            .setColor(_flags.BotDefaultErrorEmbedColor)
+                    ]
+                })
+            }
         })
     })
 
