@@ -512,24 +512,43 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
     Chat:(session:OptipostSession,data:JSONCompliantObject,addLog) => {
         if (typeof data.data != "string" || typeof data.userid != "string" || typeof data.username != "string") {return}
 
-        let webhookURL = channels.chnl_webhooks[session.id].url
-
         let showMessage = function() {
             if (!data.userid) {return}
-            axios.post(webhookURL,{
-                content:data.data,
-                avatar_url:channels.imgcache[data.userid.toString()],
-                username: _flags.UseCustomChatMessageUsername 
-                ? _FlagFormat(_flags.ChatMessageUsernameLayout,{
-                    DisplayName:data.displayname?.toString() || "?",
-                    Username:data.username?.toString() || "?",
-                    UserId:data.userid.toString()
-                }) 
-                : `${data.displayname == data.username ? data.username : `${data.displayname} [${data.username}]`} (${data.userid})`,
-                allowed_mentions: {
-                    parse: []
-                }
-            }).catch(() => {})
+
+            if (!channels.other[session.id].ready) {return}
+
+            if (channels.chnl_webhooks[session.id]) {
+                let webhookURL = channels.chnl_webhooks[session.id].url
+                axios.post(webhookURL,{
+                    content:data.data,
+                    avatar_url:channels.imgcache[data.userid.toString()],
+                    username: _flags.UseCustomChatMessageUsername 
+                    ? _FlagFormat(_flags.ChatMessageUsernameLayout,{
+                        DisplayName:data.displayname?.toString() || "?",
+                        Username:data.username?.toString() || "?",
+                        UserId:data.userid.toString()
+                    }) 
+                    : `${data.displayname == data.username ? data.username : `${data.displayname} [${data.username}]`} (${data.userid})`,
+                    allowed_mentions: {
+                        parse: []
+                    }
+                }).catch(() => {})
+            } else {
+                channels.Dynamic[session.id].send({
+                    embeds: [
+                        new Discord.MessageEmbed()
+                            .setAuthor({name:_flags.UseCustomChatMessageUsername 
+                                ? _FlagFormat(_flags.ChatMessageUsernameLayout,{
+                                    DisplayName:data.displayname?.toString() || "?",
+                                    Username:data.username?.toString() || "?",
+                                    UserId:data.userid.toString()
+                                }) 
+                                : `${data.displayname == data.username ? data.username : `${data.displayname} [${data.username}]`} (${data.userid})`,iconURL:channels.imgcache[data.userid.toString()]})
+                            .setDescription((data.data || "<unknown>").toString())
+                            
+                    ]
+                })
+            }
         }
 
         addLog(`${data.displayname == data.username ? data.username : `${data.displayname}/${data.username}`} (${data.userid}): ${data.data}`)
@@ -823,9 +842,75 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     guild.channels.create(`${Session.id}`).then((channel:Discord.TextChannel) => {
         channel.setParent(channels.Static.category)
         channels.Dynamic[Session.id] = channel
+        let LimitedModeActivated = false
+        let LimitedModeTimer = setTimeout(() => {
+            if (!channel) {return}
+            channel.send({
+                embeds: [
+                    new Discord.MessageEmbed()
+                        .setColor(_flags.BotDefaultErrorEmbedColor)
+                        .setTitle("Limited Mode")
+                        .setDescription(`The bot was unable to create a webhook within ${_TimeFormat(_flags.LimitedModeNotificationTimer)}.\n\nHowever, if you'd like, you can activate Limited Mode by clicking the green button.\n\nLimited mode uses the bot for the chat, along with embeds.`)
+                ],
+                components: [
+                    new Discord.MessageActionRow()
+                        .addComponents(
+                            new Discord.MessageButton()
+                                .setCustomId("EnableLimitedMode")
+                                .setStyle("SUCCESS")
+                                .setLabel("Enable Limited Mode"),
+                                new Discord.MessageButton()
+                                .setCustomId("Disconnect")
+                                .setStyle("SECONDARY")
+                                .setLabel("Disconnect")
+                        )
+                ]
+            }).then((msg) => {
+
+                let col = msg.createMessageComponentCollector({componentType:"BUTTON",time:300000})
+
+                let success = false
+
+                col.on("collect", (int) => {
+                    
+                    // i hat eyou discord apis
+                    // if this breaks it i swear to god
+
+                    let memb = channels.Static.targetGuild?.members.resolve(int.user)
+
+                    if (_config.role) {
+                        if (!memb?.roles.cache.has(_config.role)) {
+                            return
+                        }
+                    }
+
+                    switch (int.customId) {
+                        case "EnableLimitedMode":
+                        int.deferUpdate()
+
+                        Session.Send({type:"Ready",flags:_flags})
+                        channels.other[Session.id].ready = true
+                        LimitedModeActivated = true
+                        msg.delete()
+                        
+                    break
+                    case "Disconnect":
+                        Session.Close()
+                        channels.Dynamic[Session.id].delete()
+                    }
+                })
+            })
+        },_flags.LimitedModeNotificationTimer*1000)
         channel.createWebhook("RoControl Chat").then((webhook) => {
+
+            channels.other[Session.id].ready = true
+
+            if (!LimitedModeActivated) {
+                clearTimeout(LimitedModeTimer)
+                Session.Send({type:"Ready",flags:_flags})
+            }
+            
             channels.chnl_webhooks[Session.id] = webhook
-            Session.Send({type:"Ready",flags:_flags})
 
             let channels_until_archive_full = 50-Array.from(channels.Static.archive?.children?.values() || []).length
         
@@ -839,6 +924,8 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                     ]
                 })
             }
+        }).catch(() => {
+            
         })
     })
 
@@ -854,7 +941,10 @@ OptipostServer.connection.then((Session:OptipostSession) => {
     })
 
     Session.death.then(() => {
-        channels.chnl_webhooks[Session.id].delete()
+        if (channels.chnl_webhooks[Session.id]) {
+            channels.chnl_webhooks[Session.id].delete()
+        }
+        
         make_glot_post(logs.join("\n")).then((url:string) => {
             if (channels.Static.logchannel) {
                 channels.Static.logchannel.send({
@@ -946,7 +1036,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                             msg.channel.delete()
                         }
                     })
-                })
+                }).catch(() => {})
         })
     })
 
