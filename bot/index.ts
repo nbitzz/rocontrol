@@ -821,10 +821,10 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 
     if (!guild) {return}
     guild.channels.create(`${Session.id}`).then((channel:Discord.TextChannel) => {
+        channel.setParent(channels.Static.category)
+        channels.Dynamic[Session.id] = channel
         channel.createWebhook("RoControl Chat").then((webhook) => {
-            channels.Dynamic[Session.id] = channel
             channels.chnl_webhooks[Session.id] = webhook
-            channel.setParent(channels.Static.category)
             Session.Send({type:"Ready",flags:_flags})
         })
     })
