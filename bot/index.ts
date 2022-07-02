@@ -845,61 +845,69 @@ OptipostServer.connection.then((Session:OptipostSession) => {
         let LimitedModeActivated = false
         let LimitedModeTimer = setTimeout(() => {
             if (!channel) {return}
-            channel.send({
-                embeds: [
-                    new Discord.MessageEmbed()
-                        .setColor(_flags.BotDefaultErrorEmbedColor)
-                        .setTitle("Limited Mode")
-                        .setDescription(`The bot was unable to create a webhook within ${_TimeFormat(_flags.LimitedModeNotificationTimer)}.\n\nHowever, if you'd like, you can activate Limited Mode by clicking the green button.\n\nLimited mode uses the bot for the chat, along with embeds.`)
-                ],
-                components: [
-                    new Discord.MessageActionRow()
-                        .addComponents(
-                            new Discord.MessageButton()
-                                .setCustomId("EnableLimitedMode")
-                                .setStyle("SUCCESS")
-                                .setLabel("Enable Limited Mode"),
+            if (_flags.EnsureLimitedMode) {
+                Session.Send({type:"Ready",flags:_flags})
+                channels.other[Session.id].ready = true
+                LimitedModeActivated = true
+                channel.setName(_flags.LimitedModeLabel+channel.name)
+            } else {
+                channel.send({
+                    embeds: [
+                        new Discord.MessageEmbed()
+                            .setColor(_flags.BotDefaultErrorEmbedColor)
+                            .setTitle("Limited Mode")
+                            .setDescription(`The bot was unable to create a webhook within ${_TimeFormat(_flags.LimitedModeNotificationTimer)}.\n\nHowever, if you'd like, you can activate Limited Mode by clicking the green button.\n\nLimited mode uses the bot for the chat, along with embeds.`)
+                    ],
+                    components: [
+                        new Discord.MessageActionRow()
+                            .addComponents(
                                 new Discord.MessageButton()
-                                .setCustomId("Disconnect")
-                                .setStyle("SECONDARY")
-                                .setLabel("Disconnect")
-                        )
-                ]
-            }).then((msg) => {
+                                    .setCustomId("EnableLimitedMode")
+                                    .setStyle("SUCCESS")
+                                    .setLabel("Enable Limited Mode"),
+                                    new Discord.MessageButton()
+                                    .setCustomId("Disconnect")
+                                    .setStyle("SECONDARY")
+                                    .setLabel("Disconnect")
+                            )
+                    ]
+                }).then((msg) => {
 
-                let col = msg.createMessageComponentCollector({componentType:"BUTTON",time:300000})
+                    let col = msg.createMessageComponentCollector({componentType:"BUTTON",time:300000})
 
-                let success = false
+                    let success = false
 
-                col.on("collect", (int) => {
-                    
-                    // i hat eyou discord apis
-                    // if this breaks it i swear to god
-
-                    let memb = channels.Static.targetGuild?.members.resolve(int.user)
-
-                    if (_config.role) {
-                        if (!memb?.roles.cache.has(_config.role)) {
-                            return
-                        }
-                    }
-
-                    switch (int.customId) {
-                        case "EnableLimitedMode":
-                        int.deferUpdate()
-
-                        Session.Send({type:"Ready",flags:_flags})
-                        channels.other[Session.id].ready = true
-                        LimitedModeActivated = true
-                        msg.delete()
+                    col.on("collect", (int) => {
                         
-                    break
-                    case "Disconnect":
-                        Session.Close()
-                        channels.Dynamic[Session.id].delete()
-                    }
-                })
+                        // i hat eyou discord apis
+                        // if this breaks it i swear to god
+
+                        let memb = channels.Static.targetGuild?.members.resolve(int.user)
+
+                        if (_config.role) {
+                            if (!memb?.roles.cache.has(_config.role)) {
+                                return
+                            }
+                        }
+
+                        switch (int.customId) {
+                            case "EnableLimitedMode":
+                            int.deferUpdate()
+
+                            Session.Send({type:"Ready",flags:_flags})
+                            channels.other[Session.id].ready = true
+                            LimitedModeActivated = true
+                            channel.setName(_flags.LimitedModeLabel+channel.name)
+                            msg.delete()
+                            
+                        break
+                        case "Disconnect":
+                            Session.Close()
+                            channels.Dynamic[Session.id].delete()
+                        }
+                    })
             })
+            }
         },_flags.LimitedModeNotificationTimer*1000)
         channel.createWebhook("RoControl Chat").then((webhook) => {
 
@@ -942,7 +950,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 
     Session.death.then(() => {
         if (channels.chnl_webhooks[Session.id]) {
-            channels.chnl_webhooks[Session.id].delete()
+            channels.chnl_webhooks[Session.id].delete().catch(() => {})
         }
         
         make_glot_post(logs.join("\n")).then((url:string) => {

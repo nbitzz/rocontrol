@@ -12,6 +12,8 @@
     "ChannelAutoDeleteTimer":600,
     "ChannelArchiveWarningLimit":5,
     "LimitedModeNotificationTimer":5,
+    "EnsureLimitedMode":true,
+    "LimitedModeLabel":"⚠▐▌",
 
     "UseCustomChatMessageUsername":false,
     "ChatMessageUsernameLayout":"${DisplayName} [${Username}] (${UserId})",
