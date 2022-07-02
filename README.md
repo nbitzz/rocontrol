@@ -6,7 +6,7 @@ RoControl<br>
 <img src="https://img.shields.io/github/package-json/v/nbitzz/rocontrol/main"></img><br>
 </h1>
 
-<p align="center"><img src="https://uc812c8fd442b566c8f8214c92bf.previews.dropboxusercontent.com/p/thumb/ABk7--VUtbPstbZnlJ5gSjfjuPf43eihcA0irp9aRPjpsFCEyvgJTBwh-Iy7pekSGlsJES_Jk9JAGUL_aoyHIYm9seLPRlxX5YY-qpQT5j6kh7STZfvhJQZuqBdXAWKl5TWiDdYCanddGmGNE9_lF89oYTtqFooBqYwZpx5SWTpRyxYHss6gWIlcprdxO9XPzMpSifuF3o1x44XhHTaUMASnEklUi1JqCVHYVrrl8EDml6721NMxyiaAWQQ6C8kIY7lWMRe8sYNtaJWN3AH-MweAnQwc7LA4O8yK5cSEhRu74I1vfuTa_VfEbF4aG20jVbwnJZTWFk3_-Zaiunm3eLIgILKf-lXWGj8Vs3LuY9ezwUU0xWN0-9-_y6Sv6WTNbT4/p.png" width="200"><br>
+<p align="center"><img src="https://github.com/nbitzz/rocontrol/blob/dev/assets/on_roblox_badge.png?raw=true" width="200"><br>
 <em>Not affiliated with Roblox Corporation</em><br><br><a href="https://github.com/nbitzz/rocontrol/tree/main"><code>main</code></a> <a href="https://github.com/nbitzz/rocontrol/tree/dev"><code>dev</code></a>
 </p>
 
