@@ -852,6 +852,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
             if (_flags.EnsureLimitedMode) {
                 Session.Send({type:"Ready",flags:_flags})
                 channels.other[Session.id].ready = true
+                channels.other[Session.id].limited = true
                 LimitedModeActivated = true
                 channel.setName(_flags.LimitedModeLabel+channel.name)
             } else {
