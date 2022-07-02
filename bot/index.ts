@@ -439,7 +439,11 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         }
         addLog("-".repeat(50),true)
 
-        channels.Dynamic[session.id].setName(data.data || "studio-game-"+session.id)
+        channels.Dynamic[session.id].setName((channels.other[session.id].limited ? _flags.LimitedModeLabel : "") +(data.data || "studio-game-"+session.id))
+
+        if (channels.other[session.id].limited) {
+            addLog(_flags.LimitedModeLabel+"Limited Mode Active")
+        }
 
         let ConnectionDialogueEmbed = new Discord.MessageEmbed()
         .setTitle("Connected")
@@ -896,6 +900,7 @@ OptipostServer.connection.then((Session:OptipostSession) => {
 
                             Session.Send({type:"Ready",flags:_flags})
                             channels.other[Session.id].ready = true
+                            channels.other[Session.id].limited = true
                             LimitedModeActivated = true
                             channel.setName(_flags.LimitedModeLabel+channel.name)
                             msg.delete()
