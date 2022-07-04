@@ -263,7 +263,7 @@ local anonymous = false
 
 ut.middleware:SetAction("Chat",function(e) 
     if (anonymous) then
-        ut.Speaker:SayMessage(data.data,"All",{
+        ut.Speaker:SayMessage(e.data.data,"All",{
             NameColor=Color3.new(1,0,0)
         })
     else
