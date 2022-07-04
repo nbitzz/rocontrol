@@ -7,6 +7,7 @@ Set of APIs used to add commands to RoControl
 
 [ut](#ut)<br>
 [Commands](#commands)<br>
+[Data](#data)<br>
 [Discord](#discord)<br>
 [Util](#util)<br>
 [Server](#server)<br>

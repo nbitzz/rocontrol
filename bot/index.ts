@@ -3,11 +3,11 @@ import Discord, { Intents, Message } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
-import { FlowFlags } from "typescript"
-import { MembershipStates } from "discord.js/typings/enums"
-
 let _config = require("../config.json")
 let _flags = require("../flags.json")
+let _RoControl = require("../rocontrol/rocontrol.json")
+
+let killswitch = false
 
 let PF:{data:{[key:string]:JSONCompliantObject},save:() => void,write:(key:string,value:JSONCompliantObject) => void,read:(key:string) => JSONCompliantObject} = {
     data:{},
@@ -306,10 +306,43 @@ let channels:{
             names:["stop","s"],
             desc:"Calls process.exit(3)",
             action:(message,args) => {
-                process.exit(3)
+                message.reply("Stopping...").then(() => {
+                    process.exit(3)
+                })
             },
             args:0
-        }
+        },
+        {
+            names:["about","abt"],
+            desc:"Gives information about RoControl",
+            action:(message,args) => {
+                message.reply({
+                    embeds: [
+                        new Discord.MessageEmbed()
+                            .setThumbnail("https://github.com/nbitzz/rocontrol/blob/dev/assets/rocontrol-app-icon.png")
+                            .setColor(_flags.BotDefaultEmbedColor)
+                            .setAuthor({name:`RoControl ${_RoControl.version_int_name}`})
+                            .setTitle(`About RoControl`)
+                            .setDescription(`[RoControl](https://github.com/nbitzz/rocontrol) ${_RoControl.version} (${_RoControl.state})`)
+                            .addFields(
+                                {name:"Contributors",value:"@stringsub\n@clustergrowling",inline:true},
+                                {name:"Special Thanks",value:"@MichiKun101",inline:true},
+                                {name:"Uptime",value:_TimeFormat(Math.floor(process.uptime())),inline:true}
+                            )
+                    ]
+                })
+            },
+            args:0
+        },
+        {
+            names:["killswitch","ks"],
+            desc:"Prevents new sessions from being opened",
+            action:(message,args) => {
+                killswitch = !killswitch
+                message.reply(`${killswitch ? "🟩" : "🟥"} Killswitch is now ${killswitch ? "enabled" : "disabled"}`)
+            },
+            args:0
+        },
     ],
     local_cmds:[
         {
@@ -823,6 +856,8 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
 
 // On connection to Optipost
 OptipostServer.connection.then((Session:OptipostSession) => {
+    if (killswitch) {Session.Close(); return}
+
     let guild = channels.Static.targetGuild
 
     let logs:string[] = [
@@ -1286,5 +1321,41 @@ if (_flags.DirectMessageRatelimit) {
     setInterval(() => {channels.other._ratelimits.DMsThisSecond=0},1000)
     setInterval(() => {channels.other._ratelimits.DMsThisMinute=0},60000)
 }
+
+process.on('uncaughtException', err => {
+    if (channels.Static.logchannel) {
+        channels.Static.logchannel.send(
+            { 
+                embeds: [
+                new Discord.MessageEmbed()
+                    .setColor(_flags.BotDefaultErrorEmbedColor)
+                    .setTitle("Oops!")
+                    .setDescription(`RoControl has crashed.\n\n\`\`\`${err.toString()}\`\`\``)
+                ]
+            }
+        ).then(() => {process.exit(1)}).catch(() => {process.exit(1)})
+    }
+
+    /*
+    fs.readFile('../rocontrol/crashes.json',(readerr,buf) => {
+        let j = []
+        if (!readerr) {
+            j = JSON.parse(buf.toString())
+        }
+        j.push({
+            timestamp: Date.now(),
+            message: err.message,
+            name: err.name,
+            stack: err.stack     
+        })
+
+        
+
+        fs.writeFile('../rocontrol/crashes.json',JSON.stringify(j),() => {
+            process.exit(1)
+        })
+    })
+    */
+});
 
 client.login(_config.token)
