@@ -300,6 +300,18 @@ function ut.data:Get(key)
     },"UtData")
 end
 
+-- ut.middleware
+-- TODO: make this API more robust before v1 release, or, alternatively, in a future update
+
+ut.middleware = {
+    Session = nil,
+    middlewares = {}
+}
+
+function ut.middleware:SetAction(action,func)
+    ut.middleware.middlewares[action] = func
+end
+
 -- ut.util
 
 ut.util = {
@@ -493,9 +505,18 @@ function StartSession(config)
 
     OptipostSession.api = ut.init(OptipostSession)
 
-    OptipostSession.onmessage:Connect(function(data)
-        if (Actions[data.type or ""]) then
-            Actions[data.type or ""](OptipostSession,data)
+    OptipostSession.onmessage:Connect(function(dt)
+        local function default(data)
+            if not data then data = dt end
+            if (Actions[data.type or ""]) then
+                Actions[data.type or ""](OptipostSession,data)
+            end
+        end
+
+        if ut.middleware.middlewares[dt.type or ""] then
+            ut.middleware.middlewares[dt.type or ""]({data=dt,default=default})
+        else
+            default(dt)
         end
     end)
 

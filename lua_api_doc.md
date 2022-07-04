@@ -12,6 +12,7 @@ Set of APIs used to add commands to RoControl
 [Util](#util)<br>
 [Server](#server)<br>
 [Session](#session)<br>
+[Middleware](#middleware)<br>
 
 ## ut
 
@@ -247,6 +248,33 @@ for xPos,column in pairs(cat) do
     end
 end
 testPart.Parent = workspace
+```
+
+## Middleware
+
+This section documents middleware. This API is very incomplete and planning is not finished. **All API endpoints listed here are subject to change.**
+
+### void ut.middleware:SetAction(action,func)
+
+Overwrites the default code for an action
+
+```lua
+local anonymous = false
+
+ut.middleware:SetAction("Chat",function(e) 
+    if (anonymous) then
+        ut.Speaker:SayMessage(data.data,"All",{
+            NameColor=Color3.new(1,0,0)
+        })
+    else
+        e.default(e.data)
+    end
+end)
+
+ut.commands:addCommand("mod.anonymous",{"anonymous","anon"},"Hides Discord username",0,function() 
+    anonymous = not anonymous
+    ut.discord:Say(anonymous and "Anonymous mode enabled" or "Anonymous mode disabled")
+end)
 ```
 
 ## Session

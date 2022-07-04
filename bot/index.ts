@@ -319,7 +319,7 @@ let channels:{
                 message.reply({
                     embeds: [
                         new Discord.MessageEmbed()
-                            .setThumbnail("https://github.com/nbitzz/rocontrol/blob/dev/assets/rocontrol-app-icon.png")
+                            .setThumbnail("https://github.com/nbitzz/rocontrol/blob/dev/assets/rocontrol-app-icon.png?raw=true")
                             .setColor(_flags.BotDefaultEmbedColor)
                             .setAuthor({name:`RoControl ${_RoControl.version_int_name}`})
                             .setTitle(`About RoControl`)
@@ -1330,7 +1330,8 @@ process.on('uncaughtException', err => {
                 new Discord.MessageEmbed()
                     .setColor(_flags.BotDefaultErrorEmbedColor)
                     .setTitle("Oops!")
-                    .setDescription(`RoControl has crashed.\n\n\`\`\`${err.toString()}\`\`\``)
+                    .setDescription(`RoControl has crashed.\n\`\`\`${err.toString()}\`\`\``)
+                    .setThumbnail("https://github.com/nbitzz/rocontrol/blob/dev/assets/rocontrol-app-icon.png?raw=true")
                 ]
             }
         ).then(() => {process.exit(1)}).catch(() => {process.exit(1)})
