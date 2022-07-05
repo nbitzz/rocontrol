@@ -162,6 +162,10 @@ Checks if a string starts with another string
 
 JS-like arrayfind
 
+### boolean ut.util.tableFindIndex(arr,tester)
+
+JS-like arrayfindindex
+
 ### boolean ut.util.tableFilter(arr,tester)
 
 JS-like arrayfilter

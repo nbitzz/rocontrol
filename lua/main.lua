@@ -380,6 +380,14 @@ function ut.util.tableFind(x,fun)
     end
 end
 
+function ut.util.tableFindIndex(x,fun)
+    for _,v in pairs(x) do
+        if fun(v) then
+            return _
+        end
+    end
+end
+
 -- ut.chat
 
 function ut._initChat(session,player:Player)
