@@ -326,6 +326,10 @@ function ut.util.startsWith(target,str)
     return string.sub(target,1,string.len(str)) == str
 end
 
+function ut.util.endsWith(target,str)
+    return string.sub(target,-string.len(str)) == str
+end
+
 function ut.util.getPlayers(strl)
     if (not strl) then return {} end
     local str = tostring(strl)
