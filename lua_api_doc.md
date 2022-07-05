@@ -158,6 +158,18 @@ end)
 
 Checks if a string starts with another string
 
+### boolean ut.util.tableFind(arr,tester)
+
+JS-like arrayfind
+
+### boolean ut.util.tableFilter(arr,tester)
+
+JS-like arrayfilter
+
+### boolean ut.util.tableMap(arr,tester)
+
+JS-like arraymap
+
 ### Array<Player> ut.util.getPlayers(search:string)
 
 Search for players. Returns array.

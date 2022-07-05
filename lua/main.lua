@@ -349,6 +349,37 @@ function ut.util.getPlayers(strl)
     end
     return players
 end
+
+function ut.util.tableFilter(x,fun)
+    local newTable = {}
+    
+    table.foreach(x,function(index,value) 
+        if fun(value) then
+            table.insert(newTable,value)
+        end
+    end)
+    
+    return newTable
+end
+
+function ut.util.tableMap(x,fun)
+    local newTable = {}
+    
+    table.foreach(x,function(index,value) 
+        newTable[index] = fun(value)
+    end)
+    
+    return newTable
+end
+
+function ut.util.tableFind(x,fun)
+    for _,v in pairs(x) do
+        if fun(v) then
+            return v
+        end
+    end
+end
+
 -- ut.chat
 
 function ut._initChat(session,player:Player)
