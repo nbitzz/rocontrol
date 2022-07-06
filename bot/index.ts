@@ -1244,7 +1244,7 @@ client.on("messageCreate",(message) => {
                     let foundSession = OptipostServer._connections.find(e => e.id == x)
                     if (!foundSession) {return}
                     if (!channels.other[foundSession.id].DTRChatEnabled) {return}
-                    if (message.content) {
+                    if (message.content && !Array.from(message.attachments.values())[0]) {
                         foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:_flags.AutoTagColorization ? (message.member?.displayHexColor || "ffefcd") : "ffffff",userId:message.author.id,messageId:message.id})
                         channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)
                     }
@@ -1255,13 +1255,42 @@ client.on("messageCreate",(message) => {
                         axios.get(att.proxyURL).then((data) => {
                             if (data.headers["content-type"].startsWith("image/")) {
                                 if (foundSession) {
+                                    let cset:{[key:string]:boolean|number|string} = {}
+                                    if (message.content.split("\n")[1]) {
+                                        message.content.split("\n")[1].split(" ").forEach(((v,x) => {
+                                            let t = v.split(":")[0]
+                                            cset[t] = v.split(":")[0] ?? true
+                                        }))
+                                    } 
                                     jimp.read(att.proxyURL).then(img => {
-                                        if (img.getHeight() > img.getWidth()) {
-                                            img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
-                                        } else if (img.getWidth() > img.getHeight()) {
-                                            img.crop((img.getWidth()/2)-(img.getHeight()/2),0,img.getHeight(),img.getHeight())
+                                        if (!cset.nocrop) {
+                                            // this code sucks. switch to a processing func or something else later maybe?
+                                            if (img.getHeight() > img.getWidth()) {
+                                                switch(cset.crop) {
+                                                    default:
+                                                        img.crop(0,(img.getHeight()/2)-(img.getWidth()/2),img.getWidth(),img.getWidth())
+                                                    break
+                                                    case "top":
+                                                        img.crop(0,0,img.getWidth(),img.getWidth())
+                                                    break
+                                                    case "bottom":
+                                                        img.crop(0,(img.getHeight())-(img.getWidth()),img.getWidth(),img.getWidth())
+                                                }
+                                                
+                                            } else if (img.getWidth() > img.getHeight()) {
+                                                switch(cset.crop) {
+                                                    default:
+                                                        img.crop((img.getWidth()/2)-(img.getHeight()/2),0,img.getHeight(),img.getHeight())
+                                                    break
+                                                    case "left":
+                                                        img.crop(0,0,img.getHeight(),img.getHeight())
+                                                    break
+                                                    case "right":
+                                                        img.crop((img.getWidth())-(img.getHeight()),0,img.getHeight(),img.getHeight())
+                                                }
+                                            }
                                         }
-                                        
+
                                         img.resize(200,200)
                                         let dtt:rgba[][] = []
                                         for (let _x = 0; _x < 200; _x++) {
@@ -1271,9 +1300,10 @@ client.on("messageCreate",(message) => {
                                             }
                                             dtt.push(col)
                                         }
-
+                                        
+                                        let cap = message.content.split("\n")[0]
                                         //@ts-ignore | Find way to not use ts-ignore
-                                        foundSession.Send({type:"Image",data:dtt})
+                                        foundSession.Send({type:"Image",data:dtt,caption:(cap.toLowerCase() == "none" || cap == "") ? undefined : cap,time:parseInt(cset.time,10) || 5})
                                     })
                                 }
                             }

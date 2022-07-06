@@ -478,7 +478,19 @@ local Actions = {
     end,
     Image = function(session,data)
         local parentG = Instance.new("ScreenGui")
-
+        if (data.caption) then
+            local t = Instance.new("TextLabel",parentG)
+            t.Text = data.caption
+            t.Size = UDim2.new(1,0,0,36)
+            t.Position = UDim2.new(0,0,0,-36)
+            t.TextColor3 = Color3.new(1,1,1)
+            t.BackgroundColor3 = Color3.new(0,0,0)
+            t.Font = Enum.Font.Gotham
+            t.TextSize = 20
+            t.TextWrapped = true
+            t.BackgroundTransparency = 0.5
+            t.BorderSizePixel = 0
+        end
 
         for xPos,Color in pairs(data.data) do
             local csK = {}
@@ -526,7 +538,7 @@ local Actions = {
             data="Image sent."
         })
 
-        task.wait(5)
+        task.wait(tonumber(data.time) or 5)
 
         for x,v in pairs(toCleanup) do
             if v then
