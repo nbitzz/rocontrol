@@ -1259,7 +1259,7 @@ client.on("messageCreate",(message) => {
                                     if (message.content.split("\n")[1]) {
                                         message.content.split("\n")[1].split(" ").forEach(((v,x) => {
                                             let t = v.split(":")[0]
-                                            cset[t] = v.split(":")[0] ?? true
+                                            cset[t] = v.split(":")[1] ?? true
                                         }))
                                     } 
                                     jimp.read(att.proxyURL).then(img => {
