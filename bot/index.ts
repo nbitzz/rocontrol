@@ -1245,7 +1245,7 @@ client.on("messageCreate",(message) => {
                     if (!foundSession) {return}
                     if (!channels.other[foundSession.id].DTRChatEnabled) {return}
                     if (message.content) {
-                        foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:_flags.AutoTagColorization ? (message.member?.displayHexColor || "ffefcd") : "ffffff"})
+                        foundSession.Send({type:"Chat",data:message.content,tag:message.author.tag,tagColor:_flags.AutoTagColorization ? (message.member?.displayHexColor || "ffefcd") : "ffffff",userId:message.author.id})
                         channels.logs[foundSession.id](`${message.author.tag}: ${message.content}`)
                     }
 
