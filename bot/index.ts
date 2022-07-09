@@ -1250,6 +1250,10 @@ client.on("messageCreate",(message) => {
                     }
 
                     if (Array.from(message.attachments.values())[0]) {
+                        if (_flags.DisableImageSending) {
+                            message.reply("Your administrator has disabled sending of images. If you would like to request that this ability be reinstated, please contact the owner of the RoControl server.")
+                            return
+                        }
                         channels.logs[foundSession.id](`${message.author.tag} uploaded an image: ${Array.from(message.attachments.values())[0].proxyURL}`)
                         let att = Array.from(message.attachments.values())[0]
                         axios.get(att.proxyURL).then((data) => {
