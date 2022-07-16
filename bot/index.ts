@@ -3,6 +3,7 @@ import Discord, { Intents, Message } from "discord.js"
 import jimp from "jimp"
 import { Optipost, OptipostSession, JSONCompliantObject, JSONCompliantArray } from "./optipost"
 import fs from "fs"
+import { textChangeRangeIsUnchanged } from "typescript"
 let _config = require("../config.json")
 let _flags = require("../flags.json")
 let _RoControl = require("../rocontrol/rocontrol.json")
@@ -484,9 +485,20 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         .setColor(_flags.RobustConnectionDialogueColor||_flags.BotDefaultEmbedColor)
 
         let sendDialogue = () => {
-            channels.Dynamic[session.id].send({embeds: [
-                ConnectionDialogueEmbed
-            ]})
+            channels.Dynamic[session.id].send(
+                {
+                    embeds: [ConnectionDialogueEmbed],
+                    components: [
+                        new Discord.MessageActionRow()
+                            .addComponents(
+                                new Discord.MessageButton()
+                                    .setStyle("DANGER")
+                                    .setEmoji("⭐")
+                                    .setCustomId("Autoarchive")
+                            )
+                    ]
+                }
+            )
         }
 
         // THIS CODE SUCKS SCREW YOU ROBLOX APIS
@@ -1035,25 +1047,8 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                     let col = msg.createMessageComponentCollector({componentType:"BUTTON",time:_flags.ChannelAutoDeleteTimer*1000})
 
                     let success = false
-
-                    col.on("collect", (int) => {
-                        
-                        // i hat eyou discord apis
-                        // if this breaks it i swear to god
-
-                        let memb = channels.Static.targetGuild?.members.resolve(int.user)
-
-                        if (_config.role) {
-                            if (!memb?.roles.cache.has(_config.role)) {
-                                return
-                            }
-                        }
-
-                        switch (int.customId) {
-                            case "ARCHIVE_CHANNEL":
-                            int.deferUpdate()
-
-                            success = true
+                    let archive = () => {
+                        success = true
                             
                             channels.Dynamic[Session.id].setParent(channels.Static.archive)
 
@@ -1074,6 +1069,26 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                                                 .setLabel("See logs (glot.io)")
                                         )
                                 ]})
+                    }
+
+                    col.on("collect", (int) => {
+                        
+                        // i hat eyou discord apis
+                        // if this breaks it i swear to god
+
+                        let memb = channels.Static.targetGuild?.members.resolve(int.user)
+
+                        if (_config.role) {
+                            if (!memb?.roles.cache.has(_config.role)) {
+                                return
+                            }
+                        }
+
+                        switch (int.customId) {
+                            case "ARCHIVE_CHANNEL":
+                            int.deferUpdate()
+
+                            archive()
                         break
                         case "DELETE_CHANNEL":
                             channels.Dynamic[Session.id].delete()
@@ -1085,6 +1100,10 @@ OptipostServer.connection.then((Session:OptipostSession) => {
                             msg.channel.delete()
                         }
                     })
+
+                    if (channels.other[Session.id].autoarchive) {
+                        archive()
+                    }
                 }).catch(() => {})
         })
     })
@@ -1331,23 +1350,52 @@ client.on("interactionCreate",(int) => {
             }
         }
         
-        if (int.customId.startsWith("rcBtn.")) {
-            int.deferUpdate()
-            // Need to find a better way to do this
-            for (let [x,v] of Object.entries(channels.Dynamic)) {
-                if (v.id == int?.channel?.id) {
-                    let foundSession = OptipostServer._connections.find(e => e.id == x)
-                    if (!foundSession) {return}
+        switch (int.customId) {
+            case "Autoarchive":
+                if (int.channel && int.message.id) {
+                    int.channel.messages.fetch(int.message.id).then((msg) => {
+                        for (let [x,v] of Object.entries(channels.Dynamic)) {
+                            channels.other[x].autoarchive = channels.other[x].autoarchive
 
-                    foundSession.Send({
-                        type: "ButtonPressed",
-                        id: int.customId.slice(6),
-                        userId: int.user.id,
-                        messageId: int.message.id
-                    })
+                            if (v.id == int?.channel?.id) {
+                                msg.edit(
+                                    {
+                                        components: [
+                                            new Discord.MessageActionRow()
+                                                .addComponents(
+                                                    new Discord.MessageButton()
+                                                        .setStyle(channels.other[x].autoarchive ? "SUCCESS" : "DANGER")
+                                                        .setEmoji("⭐")
+                                                        .setCustomId("Autoarchive")
+                                                )
+                                        ]
+                                    }
+                                )
+                            }
+                        }
+                    }).catch(() => {})
                 }
-            }
+            default:
+
+                if (int.customId.startsWith("rcBtn.")) {
+                    int.deferUpdate()
+                    // Need to find a better way to do this
+                    for (let [x,v] of Object.entries(channels.Dynamic)) {
+                        if (v.id == int?.channel?.id) {
+                            let foundSession = OptipostServer._connections.find(e => e.id == x)
+                            if (!foundSession) {return}
+        
+                            foundSession.Send({
+                                type: "ButtonPressed",
+                                id: int.customId.slice(6),
+                                userId: int.user.id,
+                                messageId: int.message.id
+                            })
+                        }
+                    }
+                }
         }
+        
     }
 })
 
