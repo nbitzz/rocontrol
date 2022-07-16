@@ -1356,23 +1356,24 @@ client.on("interactionCreate",(int) => {
                 if (int.channel && int.message.id) {
                     int.channel.messages.fetch(int.message.id).then((msg) => {
                         for (let [x,v] of Object.entries(channels.Dynamic)) {
-                            if (v.id != int.channelId) return
-                            channels.other[x].autoarchive = !channels.other[x].autoarchive
+                            if (v.id == int.channelId) {
+                                channels.other[x].autoarchive = !channels.other[x].autoarchive
 
-                            if (v.id == int?.channel?.id) {
-                                msg.edit(
-                                    {
-                                        components: [
-                                            new Discord.MessageActionRow()
-                                                .addComponents(
-                                                    new Discord.MessageButton()
-                                                        .setStyle(channels.other[x].autoarchive ? "SUCCESS" : "DANGER")
-                                                        .setEmoji("⭐")
-                                                        .setCustomId("Autoarchive")
-                                                )
-                                        ]
-                                    }
-                                )
+                                if (v.id == int?.channel?.id) {
+                                    msg.edit(
+                                        {
+                                            components: [
+                                                new Discord.MessageActionRow()
+                                                    .addComponents(
+                                                        new Discord.MessageButton()
+                                                            .setStyle(channels.other[x].autoarchive ? "SUCCESS" : "DANGER")
+                                                            .setEmoji("⭐")
+                                                            .setCustomId("Autoarchive")
+                                                    )
+                                            ]
+                                        }
+                                    )
+                                }
                             }
                         }
                     }).catch(() => {})
