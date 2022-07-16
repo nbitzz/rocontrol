@@ -1352,10 +1352,12 @@ client.on("interactionCreate",(int) => {
         
         switch (int.customId) {
             case "Autoarchive":
+                int.deferUpdate()
                 if (int.channel && int.message.id) {
                     int.channel.messages.fetch(int.message.id).then((msg) => {
                         for (let [x,v] of Object.entries(channels.Dynamic)) {
-                            channels.other[x].autoarchive = channels.other[x].autoarchive
+                            if (v.id != int.channelId) return
+                            channels.other[x].autoarchive = !channels.other[x].autoarchive
 
                             if (v.id == int?.channel?.id) {
                                 msg.edit(
