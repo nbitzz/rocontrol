@@ -5,14 +5,88 @@ Set of APIs used to add commands to RoControl
 
 ## Table of Contents
 
-[ut](#ut)<br>
-[Commands](#commands)<br>
-[Data](#data)<br>
-[Discord](#discord)<br>
-[Util](#util)<br>
-[Server](#server)<br>
-[Session](#session)<br>
-[Middleware](#middleware)<br>
+[**Models**](#models)<br>
+- [Embed](#embed)
+- [Style](#style)
+- [Button](#button)
+- [ExtraData](#extradata)
+- [Message](#message)
+- [Member](#member)
+
+[**API Calls**](#api-calls)<br>
+- [ut](#ut)
+- [Commands](#commands)
+- [Data](#data)
+- [Discord](#discord)
+- [Util](#util)
+- [Server](#server)
+- [Session](#session)
+- [Middleware](#middleware)
+
+## Models
+
+## Embed
+
+See [this page](https://discord.com/developers/docs/resources/channel#embed-object) for more details
+
+## Style
+
+```ts
+type Style = 
+    /* 1 */ "primary" | "blurple" | "blue" | "purple" |
+    /* 2 */ "secondary" | "grey" | "gray" |
+    /* 3 */ "success" | "green" |
+    /* 4 */ "red" | "danger" | "error" |
+    /* 5 */ "link" | "url" 
+
+```
+
+## Button
+
+```ts
+interface Button {
+    style: Style,
+    label?: string,
+    url?: string,
+    id?: string,
+    emoji?: string,
+    disabled?: boolean
+}
+```
+
+## ExtraData
+
+```ts
+interface ExtraData {
+    userId: string,
+    messageId: string
+}
+```
+
+## Message
+
+```ts
+interface Message {
+    embeds?: Embed[],
+    buttons?: Array<Button|string>, /* Use \n for linebreaks */
+    content?: string,
+}
+```
+
+## Member
+
+```ts
+interface Member {
+    validUser: boolean,
+    tag?: string,
+    username?: string,
+    discriminator?: number,
+    roles?: string[],
+    hasAccess?: boolean
+}
+```
+
+## API Calls
 
 ## ut
 
@@ -36,7 +110,7 @@ Creates a new ut api for the session
 
 Contains all the commands
 
-### void ut.commands:addCommand(id,commandAliases,desc,args_amt,action,roleId?)
+### void ut.commands:addCommand(id:string,commandAliases:string\[\],desc:string,args_amt:number,action:(args:string\[\],extradata:ExtraData),roleId?:string)
 
 Adds a command. If roleId is specified, everyone who does not have the specified role cannot run the command.
 ```lua
@@ -57,18 +131,18 @@ Returns data
 
 ## Discord
 
-### void ut.discord:Say(data)
+### void ut.discord:Say(data:Message|string)
 
 Sends a message in the connected Discord channel
 ```lua
 ut.discord:Say("Hello world!")
 ```
 
-### void ut.discord:QuickReply(msgid,data)
+### void ut.discord:QuickReply(msgid:string,data:Message|string)
 
 Sends a message in the connected Discord channel, equivalent to Say but replies to a message instead
 
-### void ut.discord:DirectMessage(msgid,data)
+### void ut.discord:DirectMessage(msgid:string,data:Message|string)
 
 Sends a DM to someone.
 ```lua
@@ -77,14 +151,14 @@ ut.commands:addCommand("test.dmtest",{"dmtest"},"Test DMs",0,function(args,extra
 end)
 ```
 
-### YIELDS string ut.discord:Send(data)
+### YIELDS string ut.discord:Send(data:Message|string)
 
 Sends a message in the connected Discord channel. Returns the ID.
 ```lua
 ut.discord:Send("Hello world!")
 ```
 
-### YIELDS string ut.discord:Reply(msgid,data)
+### YIELDS string ut.discord:Reply(msgid:string,data:Message|string)
 
 Replies to a a message in the connected Discord channel. Returns the ID.
 ```lua
@@ -93,21 +167,21 @@ ut.commands:addCommand("test.replytest",{"replytest"},"Test replies",0,function(
 end)
 ```
 
-### void ut.discord:Edit(id,data)
+### void ut.discord:Edit(id:string,data:Message|string)
 
 Edits a message in the connected Discord channel
 ```lua
 ut.discord:Edit(id,"Hello world!")
 ```
 
-### void ut.discord:Delete(id)
+### void ut.discord:Delete(id:string)
 
 Deletes a message in the connected Discord channel
 ```lua
 ut.discord:Delete(id)
 ```
 
-### void ut.discord:ViaWebhook(data)
+### void ut.discord:ViaWebhook(data:table)
 
 Sends a message in the connected Discord channel using the webhook used for chat messages
 ```lua
@@ -121,7 +195,7 @@ ut.discord:ViaWebhook({
 ### YIELDS boolean ut.discord:GetChatEnabled()
 Returns whether or not Discord to Roblox chat is enabled.
 
-### void ut.discord:SetChatEnabled(enabled)
+### void ut.discord:SetChatEnabled(enabled:boolean)
 
 Disable/enable Discord to Roblox chat.
 ```lua
@@ -132,7 +206,7 @@ ut.commands:addCommand("testapp.vanish",{"vanish"},"Disable/enable Discord to Ro
 end)
 ```
 
-### RBXEventSignal&lt;{userId=string,messageId=string}&gt; ut.discord:OnButtonPressed(messageid,buttonid)
+### RBXEventSignal&lt;ExtraData&gt; ut.discord:OnButtonPressed(messageid:string,buttonid:string)
 Returns an event that is fired when a button is pressed
 ```lua
 local msg = ut.discord:Send({
@@ -154,27 +228,27 @@ end)
 
 ## Util
 
-### boolean ut.util.startsWith(target,str)
+### boolean ut.util.startsWith(target:string,str:string)
 
 Checks if a string starts with another string
 
-### boolean ut.util.tableFind(arr,tester)
+### any ut.util.tableFind(any[],tester:(e) => {})
 
 JS-like arrayfind
 
-### boolean ut.util.tableFindIndex(arr,tester)
+### number|void ut.util.tableFindIndex(arr:any[],tester:(e) => any)
 
 JS-like arrayfindindex
 
-### boolean ut.util.tableFilter(arr,tester)
+### any ut.util.tableFilter(arr:any[],tester:(e) => any)
 
 JS-like arrayfilter
 
-### boolean ut.util.tableMap(arr,tester)
+### any[] ut.util.tableMap(arr:any[],tester:(e) => any)
 
 JS-like arraymap
 
-### Array<Player> ut.util.getPlayers(search:string)
+### Player[] ut.util.getPlayers(search:string)
 
 Search for players. Returns array.
 ```lua
@@ -191,10 +265,10 @@ end)
 
 ## Server
 
-### void ut.server:Eval(str)
+### void ut.server:Eval(str:string)
 Runs eval() on the RoControl server. **It is recommended to either disable this function using config.json's api-disable, or wait for a way to add passwords to RoControl in the future.**
 
-### YIELDS string ut.server:Glot(name,data)
+### YIELDS string ut.server:Glot(name:string,data:string)
 Creates a snippet on glot.io. Returns the snippet URL.
 ```lua
 ut.commands:addCommand("mod.getOutput",{"getoutput","output","o"},"Post output logs to glot.io",0,function() 
@@ -224,16 +298,16 @@ ut.commands:addCommand("mod.getOutput",{"getoutput","output","o"},"Post output l
 end)
 ```
 
-### YIELDS string[] ut.server:GetFeatures(all)
+### YIELDS string[] ut.server:GetFeatures(all:boolean)
 Returns array of all available features. If `all` is true, disabled features will be included.
 
-### string ut.server:Log(data)
+### string ut.server:Log(data:string)
 Adds to the glot.io logs
 
-### YIELDS {data: {[key: string]: any}, headers:{[key: string]: any}, error:boolean} ut.server:Get(url)
+### YIELDS {data: {[key: string]: any}, headers:{[key: string]: any}, error:boolean} ut.server:Get(url:string)
 Uses the server to send a GET request.
 
-### YIELDS {r:number,g:number,b:number,a:number}[][] ut.server:ProcessImage(url)
+### YIELDS {r:number,g:number,b:number,a:number}[][] ut.server:ProcessImage(url:string)
 Resizes and crops image to 100x100 and converts it to pixels. 
 
 ```lua
@@ -270,7 +344,7 @@ testPart.Parent = workspace
 
 This section documents middleware. This API is very incomplete and planning is not finished. **All API endpoints listed here are subject to change.**
 
-### void ut.middleware:SetAction(action,func)
+### void ut.middleware:SetAction(action:string,func:(e:{data:any,default:(data:any) => {}}) => void)
 
 Overwrites the default code for an action
 

@@ -106,9 +106,8 @@ const ProcessMessageData = function(obj:JSONCompliantObject):Discord.MessageOpti
     
     let T_MSGO:{[key:string]:any} = {}
 
-    if (obj.content) {
-        T_MSGO.content = obj.content
-    }
+    T_MSGO.content = obj.content?.toString()
+
 
     T_MSGO.embeds = []
 
