@@ -640,7 +640,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         if (!data.data || typeof data.data != "object") {return}
         if (Array.isArray(data.data)) {return}
         
-        if (data.data.content && typeof data.data.content == "string") {
+        if (data.data.content && typeof data.data.content == "string" && !data.data.noLog) {
             addLog(data.data.content,true)
         }
 
@@ -706,7 +706,7 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
         if (!data.data || typeof data.data != "object") {return}
         if (Array.isArray(data.data)) {return}
 
-        if (data.data.content && typeof data.data.content == "string") {
+        if (data.data.content && typeof data.data.content == "string" && !data.data.noLog) {
             addLog(data.data.content,true)
         }
 
