@@ -88,7 +88,7 @@ function module:Send(data,fakePost)
 end
 
 function module:Close()
-    p(self.url,JSON.stringify({type="Close",data={},id=self.id}))
+    p(self.url,JSON.stringify({type="Close",data={x=""},id=self.id}))
     self.open = false
     self._onclose:Fire()
     print("Closed!")

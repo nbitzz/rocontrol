@@ -1,0 +1,33 @@
+{
+    "BotDefaultEmbedColor":"BLURPLE",
+    "BotDefaultErrorEmbedColor":"RED",
+    "BotStatus":"${prefix}help | RoControl",
+    "LogChannelPreviewLength":100,
+    "AutoTagColorization":true,
+
+    "DisableImageSending":false,
+
+    "DirectMessageRatelimit":true,
+    "MaximumDirectMessagesPerMinute": 60,
+    "MaximumDirectMessagesPerSecond": 1,
+
+    "ChannelAutoDeleteTimer":600,
+    "ChannelArchiveWarningLimit":5,
+    "LimitedModeNotificationTimer":5,
+    "EnsureLimitedMode":false,
+    "LimitedModeLabel":"⚠▐▌",
+
+    "UseCustomChatMessageUsername":false,
+    "ChatMessageUsernameLayout":"${DisplayName} [${Username}] (${UserId})",
+    
+    "MaximumPayload":"100kb",
+    "Port":3000,
+
+    "RobustConnectionDialogue": true,
+    "UseLargeImageForRobustConnectionDialogue":true,
+    "RobustConnectionDialogueFieldsAreInline":true,
+    "RobustConnectionDialogueHasThumbnail":true,
+    "RobustConnectionDialogueColor":"BLURPLE",
+    
+    "DisplayRoControlTagInRobloxChat":true
+}

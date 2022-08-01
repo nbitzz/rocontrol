@@ -1,7 +1,20 @@
-# RoControl
+<h1 align="center">
+<img src="https://github.com/nbitzz/rocontrol/blob/dev/assets/rocontrol-app-icon.png" width="200" height="200"><br>
+RoControl<br>
+<img src="https://img.shields.io/github/license/nbitzz/rocontrol"></img>
+<img src="https://img.shields.io/github/package-json/v/nbitzz/rocontrol/dev"></img>
+<img src="https://img.shields.io/github/package-json/v/nbitzz/rocontrol/main"></img><br>
+</h1>
+
+<p align="center"><img src="https://github.com/nbitzz/rocontrol/blob/dev/assets/on_roblox_badge.png?raw=true" width="200"><br>
+<em>Not affiliated with Roblox Corporation</em><br><br><a href="https://github.com/nbitzz/rocontrol/tree/main"><code>main</code></a> <a href="https://github.com/nbitzz/rocontrol/tree/dev"><code>dev</code></a>
+</p>
+
 A simple Discord bot that connects to a Roblox game.
 
 Requires discord.js v13, express, jimp, axios, and body-parser. HTTP must be enabled.
+
+
 
 **RoControl is not designed for usage in script builders.** If you see RoControl running in a script builder, it is most likely with a custom loader and package.
 
@@ -21,9 +34,10 @@ Your config.json file should look like this:
 	"archiveCategory":"978517203018219561",
 	"prefix":">",
 	"role":"980692476769734666", // Optional
+	"log_channel":"987183903485882408", // Optional
 	"api-disable":[ // Add this field to block certain API endpoints from being run on the server
 		"RunEval"
-	] 
+	],
 	// Adding RunEval to api-disable will prevent ut.server:Eval() from being run. This is recommended. If you don't add this to api-disable, anyone who connects to your RoControl host server can run custom code.
 }
 ```

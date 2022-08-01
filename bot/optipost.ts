@@ -3,9 +3,8 @@ import bodyparser from "body-parser"
 import { BaseEvent,EventSignal } from "./events"
 import crypto from "crypto"
 
-export interface JSONCompliantArray {
-    [key:number]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null
-}
+// Forgot to add a null here. TODO: add null without breaking everything
+export type JSONCompliantArray = Array<string|number|boolean|JSONCompliantArray|JSONCompliantObject>
 
 export interface JSONCompliantObject {
     [key:string]:string|number|boolean|JSONCompliantObject|JSONCompliantArray|null
@@ -120,6 +119,9 @@ export class OptipostSession {
 
     _Send(reply:BasicReply,timesSoFar:number=0):void {
         if (timesSoFar == 5) {console.warn(`WARN! DATA DROPPED AT ${Date.now()}`);}
+        
+        this.Requests = this.Requests.filter(e => !e.Dead)
+        
         if (this.Requests[0]) {
             this.Requests[0].Reply(reply)
         } else {
@@ -205,18 +207,20 @@ export class Optipost {
     readonly app:express.Application
     readonly port:number
     readonly url:string
+    readonly verbose:boolean
     private readonly _connection:BaseEvent=new BaseEvent()
     readonly connection:EventSignal
     private connections:OptipostSession[]=[]
     get _connections():OptipostSession[] {return this.connections}
-    constructor(port:number=3000,url:string="opti") {
+    constructor(port:number=3000,url:string="opti",options?:{limit:string|number,verbose:boolean}) {
         this.connection = this._connection.Event
 
         this.app = express()
         this.port = port
         this.url = url
-        this.app.use(bodyparser.json())
-
+        this.verbose = options?.verbose || false
+        this.app.use(bodyparser.json({limit:options?.limit || "100kb"}))
+    
         this.app.get("/"+url,(req:express.Request,res:express.Response) => {
             res.send(`Optipost online`)
         })
