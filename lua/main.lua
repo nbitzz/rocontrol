@@ -448,7 +448,9 @@ local Actions = {
         session:Send({
             type = "GetGameInfo",
             data = game.JobId,
-            gameid = tonumber(game.PlaceId)
+            gameid = tonumber(game.PlaceId),
+            _PS_ID = game.PrivateServerId,
+            _PS_UID = game.PrivateServerOwnerId
         })
 
         -- init packages

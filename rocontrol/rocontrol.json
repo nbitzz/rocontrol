@@ -1,6 +1,6 @@
 {
-    "version":"1.0.0",
-    "version_int_name":"1.0 Clamshell",
-    "iversion":1,
-    "state":"stable"
+    "version":"1.1.0",
+    "version_int_name":"1.1 Quark",
+    "iversion":2,
+    "state":"dev-alpha-wip"
 }

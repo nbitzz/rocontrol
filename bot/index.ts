@@ -316,6 +316,11 @@ let channels:{
             names:["about","abt"],
             desc:"Gives information about RoControl",
             action:(message,args) => {
+                let emojis = [
+                    "♥","♥","♥","♥",
+                    "🐸","🐟","🥤","🍟"
+                ]
+
                 message.reply({
                     embeds: [
                         new Discord.MessageEmbed()
@@ -323,10 +328,10 @@ let channels:{
                             .setColor(_flags.BotDefaultEmbedColor)
                             .setAuthor({name:`RoControl ${_RoControl.version_int_name}`})
                             .setTitle(`About RoControl`)
-                            .setDescription(`[RoControl](https://github.com/nbitzz/rocontrol) ${_RoControl.version} (${_RoControl.state})`)
+                            .setDescription(`[RoControl](https://github.com/nbitzz/rocontrol) ${_RoControl.version} (${_RoControl.state})\nMade with ${emojis[Math.floor(Math.random()*emojis.length)]} by @nbitzz and other contributors\n[Update Tracker](https://github.com/users/nbitzz/projects/2/views/2)`)
                             .addFields(
                                 {name:"Contributors",value:"@stringsub\n@clustergrowling",inline:true},
-                                {name:"Special Thanks",value:"@MichiKun101",inline:true},
+                                {name:"Special Thanks",value:"@MichiKun101\n1841458",inline:true},
                                 {name:"Uptime",value:_TimeFormat(Math.floor(process.uptime())),inline:true}
                             )
                     ]
@@ -452,6 +457,14 @@ let channels:{
             },
             args:0
         },
+        {
+            names:["screenshot","spectate","spec","ss"],
+            desc:"Get a basic image of what's happening ingame",
+            action:(session,message,args) => {
+                message.reply("This command will be released in a later version of 1.1 Quark. Thank you for your support!")
+            },
+            args:1
+        },
     ]
 }
 
@@ -528,6 +541,21 @@ let OptipostActions:{[key:string]:(session: OptipostSession,data: JSONCompliantO
                         {
                             name:"Player Stats",
                             value:`${datax.data.OnlineCount} ingame now\nMaximum players per server: ${datax.data.MaxPlayers}`,
+                            inline:_flags.RobustConnectionDialogueFieldsAreInline
+                        },
+                        {
+                            name:"Private Server",
+                            value:data._PS_ID && data._PS_UID ? "Yes" : "No",
+                            inline:_flags.RobustConnectionDialogueFieldsAreInline
+                        },
+                        {
+                            name:"VIPServer ID",
+                            value:data._PS_ID?.toString() || "N/A",
+                            inline:_flags.RobustConnectionDialogueFieldsAreInline
+                        },
+                        {
+                            name:"Server Owner",
+                            value:data._PS_UID?.toString() || "N/A",
                             inline:_flags.RobustConnectionDialogueFieldsAreInline
                         }
                     )
